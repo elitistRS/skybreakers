@@ -111,10 +111,10 @@
             border-radius: 6px;
             margin-bottom: 6px;
             transition: background 0.2s;
-            cursor: pointer;
         }
 
-        .lb-team:hover { background: var(--tile-bg); }
+        /* leaderboard rows are no longer clickable to join */
+        .lb-team { cursor: default; }
 
         .lb-rank {
             font-family: var(--font-display);
@@ -123,7 +123,7 @@
             text-align: center;
         }
 
-        .lb-rank.gold { color: #f0c040; }
+        .lb-rank.gold   { color: #f0c040; }
         .lb-rank.silver { color: #b0b0b8; }
         .lb-rank.bronze { color: #cd7f32; }
         .lb-rank.normal { color: var(--text-muted); }
@@ -207,6 +207,49 @@
 
         .team-bar .leave-btn:hover { border-color: var(--danger); color: var(--danger); }
 
+        /* ── SHARE BOX ── */
+        .share-box {
+            background: rgba(240, 192, 64, 0.05);
+            border: 1px solid var(--accent-dim);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .share-box .share-info {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .share-box .share-info strong {
+            color: var(--accent);
+            font-family: monospace;
+            letter-spacing: 0.1em;
+        }
+
+        .share-box .share-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .share-codes {
+            display: flex;
+            gap: 24px;
+        }
+
+        .share-code-block {
+            text-align: center;
+        }
+
         /* ── LOBBY ── */
         .lobby { text-align: center; }
 
@@ -221,14 +264,29 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-            max-width: 380px;
+            max-width: 420px;
             margin: 0 auto;
         }
 
         .input-group { display: flex; gap: 8px; }
 
-        .input-group input {
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-row input {
             flex: 1;
+        }
+
+        .field-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
             padding: 12px 16px;
             background: var(--surface);
             border: 1px solid var(--tile-border);
@@ -240,8 +298,10 @@
             transition: border-color 0.2s;
         }
 
-        .input-group input:focus { border-color: var(--accent-dim); }
-        .input-group input::placeholder { color: var(--text-muted); }
+        input[type="text"]:focus,
+        input[type="password"]:focus { border-color: var(--accent-dim); }
+
+        input::placeholder { color: var(--text-muted); }
 
         .divider {
             display: flex;
@@ -258,6 +318,59 @@
             flex: 1;
             height: 1px;
             background: var(--tile-border);
+        }
+
+        .hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: left;
+            line-height: 1.5;
+            padding: 0 2px;
+        }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--tile-border);
+            border-radius: 12px;
+            padding: 28px 24px;
+            max-width: 360px;
+            width: 100%;
+        }
+
+        .modal h3 {
+            font-family: var(--font-display);
+            color: var(--accent);
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .modal .modal-sub {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .modal .modal-actions .btn {
+            flex: 1;
         }
 
         /* ── BUTTONS ── */
@@ -376,8 +489,8 @@
         }
 
         @keyframes tileReveal {
-            0% { transform: scale(0.8) rotateY(90deg); opacity: 0; }
-            50% { transform: scale(1.05) rotateY(0deg); opacity: 1; }
+            0%   { transform: scale(0.8) rotateY(90deg); opacity: 0; }
+            50%  { transform: scale(1.05) rotateY(0deg); opacity: 1; }
             100% { transform: scale(1); }
         }
 
@@ -497,6 +610,7 @@
             .tile { font-size: 0.5rem; padding: 4px 2px; }
             .team-bar { flex-direction: column; text-align: center; }
             .lb-team { grid-template-columns: 28px 1fr 70px 50px; gap: 6px; padding: 8px; }
+            .share-codes { flex-direction: column; gap: 12px; }
         }
 
         .hidden { display: none !important; }
@@ -510,10 +624,10 @@
     <div class="container">
         <header class="header">
             <h1>Skybreakers Bingo</h1>
-            <div class="subtitle">Clan PvM & Skilling Challenge</div>
+            <div class="subtitle">Clan PvM &amp; Skilling Challenge</div>
         </header>
 
-        <!-- ═══ LEADERBOARD (visible on lobby) ═══ -->
+        <!-- ═══ LEADERBOARD (lobby only) ═══ -->
         <div id="leaderboard-section" class="leaderboard">
             <h2>⚔ Leaderboard</h2>
             <div id="leaderboardContent">
@@ -526,16 +640,27 @@
             <div class="lobby">
                 <h2>Join or Create a Team</h2>
                 <div class="lobby-actions">
-                    <div class="input-group">
+
+                    <!-- CREATE -->
+                    <div class="field-stack">
                         <input type="text" id="teamNameInput" placeholder="Team name..." maxlength="30">
+                        <input type="password" id="teamPassInput" placeholder="Set a join code (shared with your team)..." maxlength="30">
                         <button class="btn btn-primary" onclick="createTeam()">Create Team</button>
+                        <p class="hint">⚠️ Share the join code only with your teammates — it's required to open the board.</p>
                     </div>
+
                     <div class="divider"><span>or join existing</span></div>
-                    <div class="input-group">
-                        <input type="text" id="joinCodeInput" placeholder="Enter team code..." maxlength="5"
-                            style="text-transform: uppercase; letter-spacing: 0.15em; font-family: monospace;">
-                        <button class="btn btn-secondary" onclick="joinTeam()">Join</button>
+
+                    <!-- JOIN -->
+                    <div class="field-stack">
+                        <div class="input-row">
+                            <input type="text" id="joinCodeInput" placeholder="Team code..."
+                                maxlength="5" style="text-transform:uppercase;letter-spacing:.15em;font-family:monospace;flex:1">
+                            <input type="password" id="joinPassInput" placeholder="Join code..." maxlength="30" style="flex:1.5">
+                        </div>
+                        <button class="btn btn-secondary" onclick="joinTeam()">Join Team</button>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -544,8 +669,24 @@
         <div id="screen-game" class="hidden">
             <div class="team-bar">
                 <span class="team-name" id="teamNameDisplay"></span>
-                <span class="team-code" id="teamCodeDisplay" title="Click to copy" onclick="copyTeamCode()"></span>
+                <span class="team-code" id="teamCodeDisplay" title="Click to copy team code" onclick="copyTeamCode()"></span>
                 <button class="leave-btn" onclick="leaveTeam()">← Back</button>
+            </div>
+
+            <!-- Share codes reminder -->
+            <div class="share-box" id="shareBox">
+                <div class="share-codes">
+                    <div class="share-code-block">
+                        <div class="share-label">Team Code</div>
+                        <strong id="shareTeamCode" style="font-family:monospace;font-size:1.1rem;color:var(--accent);letter-spacing:.15em"></strong>
+                    </div>
+                    <div class="share-code-block">
+                        <div class="share-label">Join Code</div>
+                        <strong id="shareJoinCode" style="font-family:monospace;font-size:1.1rem;color:var(--text);letter-spacing:.15em"></strong>
+                    </div>
+                </div>
+                <div class="share-info">Share both codes with your teammates so they can join.<br>
+                <span style="font-size:0.7rem;opacity:.6">Click the Team Code in the bar above to copy it.</span></div>
             </div>
 
             <div id="bingoAlert" class="bingo-alert hidden">
@@ -554,7 +695,7 @@
             </div>
 
             <div class="stats" id="statsDisplay">0 / 25 revealed</div>
-            <div class="progress-bar"><div class="fill" id="progressFill" style="width: 0%"></div></div>
+            <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
 
             <div class="board-wrapper">
                 <div class="bingo-board" id="board"></div>
@@ -567,6 +708,21 @@
             <div class="log" id="logSection">
                 <h3>Activity Log</h3>
                 <div id="logEntries"><span class="log-empty">No tasks revealed yet...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ PASSWORD MODAL ═══ -->
+    <div class="modal-overlay hidden" id="authModal">
+        <div class="modal">
+            <h3>🔒 Enter Join Code</h3>
+            <p class="modal-sub" id="authModalSub">This team is protected. Enter the join code your team leader shared with you.</p>
+            <input type="password" id="authModalInput" placeholder="Join code..." maxlength="30"
+                style="width:100%;margin-bottom:0"
+                onkeydown="if(event.key==='Enter') submitAuthModal()">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeAuthModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="submitAuthModal()">Enter</button>
             </div>
         </div>
     </div>
@@ -607,9 +763,51 @@
         // ═══════════════════════════════════════════
         //  STATE
         // ═══════════════════════════════════════════
-        let currentTeamCode = null;
-        let currentTeamRef = null;
-        let teamData = null;
+        let currentTeamCode  = null;
+        let currentTeamRef   = null;
+        let currentJoinCode  = null; // plaintext, kept in memory only
+        let teamData         = null;
+
+        // pending auth modal resolve callback
+        let authModalResolve = null;
+
+        // ═══════════════════════════════════════════
+        //  CRYPTO HELPERS
+        // ═══════════════════════════════════════════
+        async function hashCode(plaintext) {
+            const enc  = new TextEncoder();
+            const buf  = await crypto.subtle.digest('SHA-256', enc.encode(plaintext));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function verifyCode(plaintext, storedHash) {
+            const h = await hashCode(plaintext);
+            return h === storedHash;
+        }
+
+        // ═══════════════════════════════════════════
+        //  AUTH MODAL
+        // ═══════════════════════════════════════════
+        function showAuthModal(teamName) {
+            document.getElementById('authModalSub').textContent =
+                `"${teamName}" is protected. Enter the join code your team leader shared.`;
+            document.getElementById('authModalInput').value = '';
+            document.getElementById('authModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('authModalInput').focus(), 80);
+
+            return new Promise(resolve => { authModalResolve = resolve; });
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+            if (authModalResolve) { authModalResolve(null); authModalResolve = null; }
+        }
+
+        function submitAuthModal() {
+            const val = document.getElementById('authModalInput').value.trim();
+            document.getElementById('authModal').classList.add('hidden');
+            if (authModalResolve) { authModalResolve(val || null); authModalResolve = null; }
+        }
 
         // ═══════════════════════════════════════════
         //  SCREEN MANAGEMENT
@@ -621,7 +819,7 @@
         }
 
         // ═══════════════════════════════════════════
-        //  LEADERBOARD (real-time)
+        //  LEADERBOARD (real-time, read-only)
         // ═══════════════════════════════════════════
         function initLeaderboard() {
             db.ref('teams').on('value', (snapshot) => {
@@ -638,8 +836,8 @@
 
             const sorted = Object.entries(teams).map(([code, data]) => {
                 const completed = data.completed ? Object.keys(data.completed).length : 0;
-                const revealed = data.revealed ? Object.keys(data.revealed).length : 0;
-                const total = (data.tasks || DEFAULT_TASKS).length;
+                const revealed  = data.revealed  ? Object.keys(data.revealed).length  : 0;
+                const total     = (data.tasks || DEFAULT_TASKS).length;
                 return { code, name: data.name, completed, revealed, total };
             }).sort((a, b) => b.completed - a.completed || b.revealed - a.revealed);
 
@@ -647,8 +845,8 @@
 
             el.innerHTML = sorted.map((team, i) => {
                 const pct = team.total > 0 ? (team.completed / team.total) * 100 : 0;
-                const rc = i < 3 ? rankClasses[i] : 'normal';
-                return `<div class="lb-team" onclick="joinTeamByCode('${team.code}')" title="View ${escapeHtml(team.name)}">
+                const rc  = i < 3 ? rankClasses[i] : 'normal';
+                return `<div class="lb-team">
                     <div class="lb-rank ${rc}">${i + 1}</div>
                     <div class="lb-name">${escapeHtml(team.name)}</div>
                     <div class="lb-bar-wrapper"><div class="lb-bar" style="width:${pct}%"></div></div>
@@ -677,64 +875,80 @@
         }
 
         async function createTeam() {
-            const name = document.getElementById('teamNameInput').value.trim();
-            if (!name) { showToast('Enter a team name.'); return; }
+            const name      = document.getElementById('teamNameInput').value.trim();
+            const joinCode  = document.getElementById('teamPassInput').value.trim();
 
-            const code = generateCode();
+            if (!name)     { showToast('Enter a team name.');    return; }
+            if (!joinCode) { showToast('Set a join code for your team.'); return; }
+            if (joinCode.length < 3) { showToast('Join code must be at least 3 characters.'); return; }
+
+            const joinHash = await hashCode(joinCode);
+            const code     = generateCode();
             const shuffled = shuffleArray(DEFAULT_TASKS);
 
             await db.ref(`teams/${code}`).set({
                 name,
-                tasks: shuffled,
-                revealed: {},
+                joinHash,
+                tasks:     shuffled,
+                revealed:  {},
                 completed: {},
-                log: {},
+                log:       {},
                 createdAt: firebase.database.ServerValue.TIMESTAMP
             });
 
             showToast(`Team "${name}" created! Code: ${code}`);
-            joinTeamByCode(code);
+            // remember plaintext join code in memory for this session
+            openTeamBoard(code, joinCode, name);
         }
 
         async function joinTeam() {
-            const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
-            if (!code) { showToast('Enter a team code.'); return; }
+            const code     = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+            const joinCode = document.getElementById('joinPassInput').value.trim();
+
+            if (!code)     { showToast('Enter a team code.'); return; }
+            if (!joinCode) { showToast('Enter the join code.'); return; }
 
             const snap = await db.ref(`teams/${code}`).once('value');
-            if (!snap.exists()) {
-                showToast('Team not found. Check the code.');
-                return;
-            }
-            joinTeamByCode(code);
+            if (!snap.exists()) { showToast('Team not found. Check the code.'); return; }
+
+            const data = snap.val();
+            const ok   = await verifyCode(joinCode, data.joinHash);
+            if (!ok) { showToast('Wrong join code. Try again.'); return; }
+
+            openTeamBoard(code, joinCode, data.name);
         }
 
-        function joinTeamByCode(code) {
+        // ─── internal: enter the board after auth is confirmed ───
+        function openTeamBoard(code, joinCode, teamName) {
             currentTeamCode = code;
+            currentJoinCode = joinCode;
             localStorage.setItem('rs3bingo_team', code);
+            // We do NOT store joinCode in localStorage — it stays in memory
 
             if (currentTeamRef) currentTeamRef.off();
 
             currentTeamRef = db.ref(`teams/${code}`);
             currentTeamRef.on('value', (snap) => {
                 teamData = snap.val();
-                if (!teamData) {
-                    showToast('Team was deleted.');
-                    leaveTeam();
-                    return;
-                }
+                if (!teamData) { showToast('Team was deleted.'); leaveTeam(); return; }
                 renderBoard();
                 renderLog();
                 checkBingoLines();
             });
+
+            // Show share box with codes for the team creator's convenience
+            document.getElementById('shareTeamCode').textContent = code;
+            document.getElementById('shareJoinCode').textContent = joinCode;
 
             showScreen('game');
         }
 
         function leaveTeam() {
             if (currentTeamRef) currentTeamRef.off();
-            currentTeamRef = null;
+            currentTeamRef  = null;
             currentTeamCode = null;
-            teamData = null;
+            currentJoinCode = null;
+            teamData        = null;
             localStorage.removeItem('rs3bingo_team');
             showScreen('lobby');
         }
@@ -745,14 +959,14 @@
         function renderBoard() {
             if (!teamData) return;
 
-            const tasks = teamData.tasks || DEFAULT_TASKS;
-            const revealed = teamData.revealed || {};
+            const tasks     = teamData.tasks || DEFAULT_TASKS;
+            const revealed  = teamData.revealed  || {};
             const completed = teamData.completed || {};
 
             document.getElementById('teamNameDisplay').textContent = teamData.name;
             document.getElementById('teamCodeDisplay').textContent = currentTeamCode;
 
-            const revCount = Object.keys(revealed).length;
+            const revCount  = Object.keys(revealed).length;
             const compCount = Object.keys(completed).length;
             document.getElementById('statsDisplay').textContent =
                 `${revCount}/25 revealed · ${compCount} completed`;
@@ -766,21 +980,21 @@
                 boardEl.innerHTML = '';
                 tasks.forEach((task, i) => {
                     const tile = document.createElement('div');
-                    tile.className = 'tile';
-                    tile.dataset.index = i;
-                    tile.innerText = task;
+                    tile.className      = 'tile';
+                    tile.dataset.index  = i;
+                    tile.innerText      = task;
                     tile.addEventListener('click', () => toggleComplete(i));
                     boardEl.appendChild(tile);
                 });
             }
 
             boardEl.querySelectorAll('.tile').forEach((tile) => {
-                const i = tile.dataset.index;
+                const i          = tile.dataset.index;
                 const wasRevealed = tile.classList.contains('revealed') || tile.classList.contains('completed');
-                const isRevealed = revealed[i] === true;
+                const isRevealed  = revealed[i]  === true;
                 const isCompleted = completed[i] === true;
 
-                tile.classList.toggle('revealed', isRevealed && !isCompleted);
+                tile.classList.toggle('revealed',  isRevealed && !isCompleted);
                 tile.classList.toggle('completed', isCompleted);
 
                 if (isRevealed && !wasRevealed) {
@@ -804,16 +1018,16 @@
             for (let col = 0; col < 5; col++) {
                 if ([0,1,2,3,4].every(r => c[r*5+col])) lines.push(`Col ${col+1}`);
             }
-            if ([0,1,2,3,4].every(i => c[i*6])) lines.push('Diagonal ↘');
+            if ([0,1,2,3,4].every(i => c[i*6]))     lines.push('Diagonal ↘');
             if ([0,1,2,3,4].every(i => c[i*5+(4-i)])) lines.push('Diagonal ↙');
 
-            const alert = document.getElementById('bingoAlert');
+            const alertEl = document.getElementById('bingoAlert');
             if (lines.length > 0) {
-                alert.classList.remove('hidden');
+                alertEl.classList.remove('hidden');
                 document.getElementById('bingoAlertText').textContent =
                     `${lines.length} line${lines.length > 1 ? 's' : ''}: ${lines.join(', ')}`;
             } else {
-                alert.classList.add('hidden');
+                alertEl.classList.add('hidden');
             }
         }
 
@@ -823,7 +1037,7 @@
         async function revealRandomTile() {
             if (!teamData) return;
             const revealed = teamData.revealed || {};
-            const tasks = teamData.tasks || DEFAULT_TASKS;
+            const tasks    = teamData.tasks    || DEFAULT_TASKS;
 
             const hidden = [];
             for (let i = 0; i < tasks.length; i++) {
@@ -834,12 +1048,12 @@
             const pick = hidden[Math.floor(Math.random() * hidden.length)];
 
             const updates = {};
-            updates[`revealed/${pick}`] = true;
-            updates[`log/${Date.now()}`] = {
+            updates[`revealed/${pick}`]       = true;
+            updates[`log/${Date.now()}`]       = {
                 action: 'reveal',
-                task: tasks[pick],
-                index: pick,
-                time: new Date().toISOString()
+                task:   tasks[pick],
+                index:  pick,
+                time:   new Date().toISOString()
             };
 
             await db.ref(`teams/${currentTeamCode}`).update(updates);
@@ -853,16 +1067,15 @@
 
             const updates = {};
             updates[`completed/${index}`] = isCompleted ? null : true;
-            updates[`log/${Date.now()}`] = {
+            updates[`log/${Date.now()}`]  = {
                 action: isCompleted ? 'uncomplete' : 'complete',
-                task: teamData.tasks[index],
+                task:   teamData.tasks[index],
                 index,
-                time: new Date().toISOString()
+                time:   new Date().toISOString()
             };
 
             await db.ref(`teams/${currentTeamCode}`).update(updates);
         }
-
 
         // ═══════════════════════════════════════════
         //  LOG
@@ -899,7 +1112,8 @@
         //  UTILITIES
         // ═══════════════════════════════════════════
         function copyTeamCode() {
-            navigator.clipboard.writeText(currentTeamCode).then(() => showToast('Team code copied!'));
+            navigator.clipboard.writeText(currentTeamCode)
+                .then(() => showToast('Team code copied!'));
         }
 
         function escapeHtml(str) {
@@ -917,18 +1131,37 @@
 
         // ═══════════════════════════════════════════
         //  BOOT
+        //  Saved team code restores only after asking
+        //  for the join code — never silently.
         // ═══════════════════════════════════════════
-        initLeaderboard();
+        async function boot() {
+            initLeaderboard();
 
-        const savedTeam = localStorage.getItem('rs3bingo_team');
-        if (savedTeam) {
-            db.ref(`teams/${savedTeam}`).once('value').then(snap => {
-                if (snap.exists()) joinTeamByCode(savedTeam);
-                else { localStorage.removeItem('rs3bingo_team'); showScreen('lobby'); }
-            });
-        } else {
-            showScreen('lobby');
+            const savedCode = localStorage.getItem('rs3bingo_team');
+            if (!savedCode) { showScreen('lobby'); return; }
+
+            const snap = await db.ref(`teams/${savedCode}`).once('value');
+            if (!snap.exists()) {
+                localStorage.removeItem('rs3bingo_team');
+                showScreen('lobby');
+                return;
+            }
+
+            const data     = snap.val();
+            const enteredCode = await showAuthModal(data.name);
+            if (!enteredCode) { showScreen('lobby'); return; }
+
+            const ok = await verifyCode(enteredCode, data.joinHash);
+            if (!ok) {
+                showToast('Wrong join code.');
+                showScreen('lobby');
+                return;
+            }
+
+            openTeamBoard(savedCode, enteredCode, data.name);
         }
+
+        boot();
     </script>
 </body>
 </html>
