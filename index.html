@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skybreakers Bingo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131a;
+            --tile-bg: #1c1c28;
+            --tile-border: #2a2a3a;
+            --tile-revealed-bg: #1a1a2e;
+            --accent: #f0c040;
+            --accent-glow: rgba(240, 192, 64, 0.3);
+            --accent-dim: #b8912e;
+            --text: #d4d4dc;
+            --text-muted: #6a6a7a;
+            --danger: #c0392b;
+            --success: #27ae60;
+            --font-display: 'Cinzel', serif;
+            --font-body: 'Fira Sans', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(240, 192, 64, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(100, 80, 200, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 24px 16px;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-family: var(--font-display);
+            font-size: clamp(1.8rem, 5vw, 2.6rem);
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 0.06em;
+            text-shadow: 0 0 30px var(--accent-glow), 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .header .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        /* ── LEADERBOARD ── */
+        .leaderboard {
+            background: var(--surface);
+            border: 1px solid var(--tile-border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 28px;
+        }
+
+        .leaderboard h2 {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: 16px;
+            letter-spacing: 0.06em;
+            text-align: center;
+        }
+
+        .leaderboard-empty {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-style: italic;
+            padding: 12px 0;
+        }
+
+        .lb-team {
+            display: grid;
+            grid-template-columns: 32px 1fr 90px 60px;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .lb-team:hover { background: var(--tile-bg); }
+
+        .lb-rank {
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .lb-rank.gold { color: #f0c040; }
+        .lb-rank.silver { color: #b0b0b8; }
+        .lb-rank.bronze { color: #cd7f32; }
+        .lb-rank.normal { color: var(--text-muted); }
+
+        .lb-name {
+            font-weight: 600;
+            font-size: 0.92rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lb-bar-wrapper {
+            background: var(--tile-bg);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .lb-bar {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+            transition: width 0.6s ease;
+        }
+
+        .lb-score {
+            text-align: right;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── TEAM INFO BAR ── */
+        .team-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface);
+            border: 1px solid var(--tile-border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .team-bar .team-name {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--accent);
+        }
+
+        .team-bar .team-code {
+            font-family: monospace;
+            font-size: 0.95rem;
+            background: var(--tile-bg);
+            padding: 4px 12px;
+            border-radius: 4px;
+            letter-spacing: 0.15em;
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .team-bar .team-code:hover { background: var(--tile-border); }
+
+        .team-bar .leave-btn {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            background: transparent;
+            border: 1px solid var(--text-muted);
+            color: var(--text-muted);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            transition: all 0.2s;
+        }
+
+        .team-bar .leave-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+        /* ── LOBBY ── */
+        .lobby { text-align: center; }
+
+        .lobby h2 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin-bottom: 24px;
+        }
+
+        .lobby-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        .input-group { display: flex; gap: 8px; }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px 16px;
+            background: var(--surface);
+            border: 1px solid var(--tile-border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus { border-color: var(--accent-dim); }
+        .input-group input::placeholder { color: var(--text-muted); }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--tile-border);
+        }
+
+        /* ── BUTTONS ── */
+        .btn {
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: var(--font-body);
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            transition: all 0.2s;
+            letter-spacing: 0.02em;
+        }
+
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+            color: #0a0a0f;
+            box-shadow: 0 2px 12px var(--accent-glow);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            box-shadow: 0 4px 20px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--tile-border);
+        }
+
+        .btn-secondary:hover:not(:disabled) { border-color: var(--accent-dim); color: var(--accent); }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .btn-danger:hover:not(:disabled) { background: var(--danger); color: white; }
+
+        /* ── BINGO BOARD ── */
+        .board-wrapper {
+            background: var(--surface);
+            border: 1px solid var(--tile-border);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        .bingo-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .tile {
+            aspect-ratio: 1;
+            background: var(--tile-bg);
+            border: 1px solid var(--tile-border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: clamp(0.55rem, 1.8vw, 0.78rem);
+            font-weight: 600;
+            padding: 6px 4px;
+            position: relative;
+            cursor: default;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            line-height: 1.3;
+        }
+
+        .tile:not(.revealed):not(.completed) { color: transparent; }
+
+        .tile:not(.revealed):not(.completed)::after {
+            content: '?';
+            position: absolute;
+            color: var(--text-muted);
+            font-size: 1.6rem;
+            font-family: var(--font-display);
+            opacity: 0.4;
+        }
+
+        .tile:not(.revealed):not(.completed):hover { border-color: var(--text-muted); }
+
+        .tile.revealed {
+            background: var(--tile-revealed-bg);
+            color: var(--accent);
+            border-color: var(--accent-dim);
+            box-shadow: inset 0 0 20px rgba(240, 192, 64, 0.08), 0 0 8px rgba(240, 192, 64, 0.1);
+            cursor: pointer;
+        }
+
+        .tile.completed {
+            background: linear-gradient(135deg, #1a2e1a, #1a2e22);
+            border-color: var(--success);
+            color: var(--success);
+            box-shadow: inset 0 0 20px rgba(39, 174, 96, 0.1);
+            cursor: pointer;
+        }
+
+        .tile.completed::before {
+            content: '✓';
+            position: absolute;
+            top: 3px;
+            right: 5px;
+            font-size: 0.65rem;
+            color: var(--success);
+            opacity: 0.8;
+        }
+
+        @keyframes tileReveal {
+            0% { transform: scale(0.8) rotateY(90deg); opacity: 0; }
+            50% { transform: scale(1.05) rotateY(0deg); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        .tile.just-revealed { animation: tileReveal 0.5s ease-out; }
+
+        /* ── CONTROLS ── */
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        /* ── PROGRESS ── */
+        .progress-bar {
+            background: var(--tile-bg);
+            border-radius: 20px;
+            height: 6px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+            border-radius: 20px;
+            transition: width 0.4s ease;
+        }
+
+        .stats {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        /* ── LOG ── */
+        .log {
+            background: var(--surface);
+            border: 1px solid var(--tile-border);
+            border-radius: 8px;
+            padding: 16px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log h3 {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            color: var(--accent-dim);
+            margin-bottom: 10px;
+            letter-spacing: 0.08em;
+        }
+
+        .log-entry {
+            font-size: 0.78rem;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(42, 42, 58, 0.5);
+            color: var(--text-muted);
+        }
+
+        .log-entry:last-child { border-bottom: none; }
+        .log-entry .time { opacity: 0.6; margin-right: 8px; }
+        .log-entry .task-name { color: var(--accent); }
+
+        .log-empty {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* ── BINGO ALERT ── */
+        .bingo-alert {
+            text-align: center;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, rgba(240, 192, 64, 0.1), rgba(240, 192, 64, 0.05));
+            border: 1px solid var(--accent-dim);
+            border-radius: 8px;
+        }
+
+        .bingo-alert h3 {
+            font-family: var(--font-display);
+            color: var(--accent);
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+
+        .bingo-alert p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--surface);
+            border: 1px solid var(--accent-dim);
+            color: var(--text);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            z-index: 999;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 480px) {
+            .bingo-board { gap: 5px; }
+            .tile { font-size: 0.5rem; padding: 4px 2px; }
+            .team-bar { flex-direction: column; text-align: center; }
+            .lb-team { grid-template-columns: 28px 1fr 70px 50px; gap: 6px; padding: 8px; }
+        }
+
+        .hidden { display: none !important; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--tile-border); border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Skybreakers Bingo</h1>
+            <div class="subtitle">Clan PvM & Skilling Challenge</div>
+        </header>
+
+        <!-- ═══ LEADERBOARD (visible on lobby) ═══ -->
+        <div id="leaderboard-section" class="leaderboard">
+            <h2>⚔ Leaderboard</h2>
+            <div id="leaderboardContent">
+                <div class="leaderboard-empty">No teams yet — create one to get started!</div>
+            </div>
+        </div>
+
+        <!-- ═══ LOBBY SCREEN ═══ -->
+        <div id="screen-lobby">
+            <div class="lobby">
+                <h2>Join or Create a Team</h2>
+                <div class="lobby-actions">
+                    <div class="input-group">
+                        <input type="text" id="teamNameInput" placeholder="Team name..." maxlength="30">
+                        <button class="btn btn-primary" onclick="createTeam()">Create Team</button>
+                    </div>
+                    <div class="divider"><span>or join existing</span></div>
+                    <div class="input-group">
+                        <input type="text" id="joinCodeInput" placeholder="Enter team code..." maxlength="5"
+                            style="text-transform: uppercase; letter-spacing: 0.15em; font-family: monospace;">
+                        <button class="btn btn-secondary" onclick="joinTeam()">Join</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ GAME SCREEN ═══ -->
+        <div id="screen-game" class="hidden">
+            <div class="team-bar">
+                <span class="team-name" id="teamNameDisplay"></span>
+                <span class="team-code" id="teamCodeDisplay" title="Click to copy" onclick="copyTeamCode()"></span>
+                <button class="leave-btn" onclick="leaveTeam()">← Back</button>
+            </div>
+
+            <div id="bingoAlert" class="bingo-alert hidden">
+                <h3>🎉 BINGO!</h3>
+                <p id="bingoAlertText"></p>
+            </div>
+
+            <div class="stats" id="statsDisplay">0 / 25 revealed</div>
+            <div class="progress-bar"><div class="fill" id="progressFill" style="width: 0%"></div></div>
+
+            <div class="board-wrapper">
+                <div class="bingo-board" id="board"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="revealBtn" onclick="revealRandomTile()">⚔ Reveal Task</button>
+            </div>
+
+            <div class="log" id="logSection">
+                <h3>Activity Log</h3>
+                <div id="logEntries"><span class="log-empty">No tasks revealed yet...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+    <script>
+        // ═══════════════════════════════════════════
+        //  FIREBASE CONFIG
+        // ═══════════════════════════════════════════
+        firebase.initializeApp({
+            apiKey: "AIzaSyAStt7XqfP1gwXaDhFE_1Z8l35smgtCfhk",
+            authDomain: "bingo-57c25.firebaseapp.com",
+            databaseURL: "https://bingo-57c25-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "bingo-57c25",
+            storageBucket: "bingo-57c25.firebasestorage.app",
+            messagingSenderId: "198647199029",
+            appId: "1:198647199029:web:af0be2b9884b748fe1087c",
+            measurementId: "G-115L3D62K2"
+        });
+        const db = firebase.database();
+
+        // ═══════════════════════════════════════════
+        //  DEFAULT TASKS
+        // ═══════════════════════════════════════════
+        const DEFAULT_TASKS = [
+            "Nex Drop", "Araxxor Leg Piece", "GWD2 Unique", "Telos Orb", "Kerapac Broadcast",
+            "Raksha Codex/Boots", "Croesus Cryptbloom", "Arch-Glacor Unique", "60 Fortunate Comps", "Skilling Pet",
+            "Boss Pet", "Fight Kiln Cape", "Elite Dungeon Drop", "Barrows 2 Weapons", "Clue Broadcast",
+            "DKS: All 4 Rings", "Matriarch Heart", "Zamorakian Drop", "Corporeal Beast Sigil", "QBD 4-piece Bow",
+            "Abyssal Wand/Whip", "Dragon Mattock", "100 ED1 Scales", "Full Godsword", "Legiones Signet"
+        ];
+
+        // ═══════════════════════════════════════════
+        //  STATE
+        // ═══════════════════════════════════════════
+        let currentTeamCode = null;
+        let currentTeamRef = null;
+        let teamData = null;
+
+        // ═══════════════════════════════════════════
+        //  SCREEN MANAGEMENT
+        // ═══════════════════════════════════════════
+        function showScreen(name) {
+            document.getElementById('screen-lobby').classList.toggle('hidden', name !== 'lobby');
+            document.getElementById('screen-game').classList.toggle('hidden', name !== 'game');
+            document.getElementById('leaderboard-section').classList.toggle('hidden', name !== 'lobby');
+        }
+
+        // ═══════════════════════════════════════════
+        //  LEADERBOARD (real-time)
+        // ═══════════════════════════════════════════
+        function initLeaderboard() {
+            db.ref('teams').on('value', (snapshot) => {
+                renderLeaderboard(snapshot.val());
+            });
+        }
+
+        function renderLeaderboard(teams) {
+            const el = document.getElementById('leaderboardContent');
+            if (!teams) {
+                el.innerHTML = '<div class="leaderboard-empty">No teams yet — create one to get started!</div>';
+                return;
+            }
+
+            const sorted = Object.entries(teams).map(([code, data]) => {
+                const completed = data.completed ? Object.keys(data.completed).length : 0;
+                const revealed = data.revealed ? Object.keys(data.revealed).length : 0;
+                const total = (data.tasks || DEFAULT_TASKS).length;
+                return { code, name: data.name, completed, revealed, total };
+            }).sort((a, b) => b.completed - a.completed || b.revealed - a.revealed);
+
+            const rankClasses = ['gold', 'silver', 'bronze'];
+
+            el.innerHTML = sorted.map((team, i) => {
+                const pct = team.total > 0 ? (team.completed / team.total) * 100 : 0;
+                const rc = i < 3 ? rankClasses[i] : 'normal';
+                return `<div class="lb-team" onclick="joinTeamByCode('${team.code}')" title="View ${escapeHtml(team.name)}">
+                    <div class="lb-rank ${rc}">${i + 1}</div>
+                    <div class="lb-name">${escapeHtml(team.name)}</div>
+                    <div class="lb-bar-wrapper"><div class="lb-bar" style="width:${pct}%"></div></div>
+                    <div class="lb-score">${team.completed}/${team.total}</div>
+                </div>`;
+            }).join('');
+        }
+
+        // ═══════════════════════════════════════════
+        //  TEAM CREATION & JOINING
+        // ═══════════════════════════════════════════
+        function generateCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+            return code;
+        }
+
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        async function createTeam() {
+            const name = document.getElementById('teamNameInput').value.trim();
+            if (!name) { showToast('Enter a team name.'); return; }
+
+            const code = generateCode();
+            const shuffled = shuffleArray(DEFAULT_TASKS);
+
+            await db.ref(`teams/${code}`).set({
+                name,
+                tasks: shuffled,
+                revealed: {},
+                completed: {},
+                log: {},
+                createdAt: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            showToast(`Team "${name}" created! Code: ${code}`);
+            joinTeamByCode(code);
+        }
+
+        async function joinTeam() {
+            const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+            if (!code) { showToast('Enter a team code.'); return; }
+
+            const snap = await db.ref(`teams/${code}`).once('value');
+            if (!snap.exists()) {
+                showToast('Team not found. Check the code.');
+                return;
+            }
+            joinTeamByCode(code);
+        }
+
+        function joinTeamByCode(code) {
+            currentTeamCode = code;
+            localStorage.setItem('rs3bingo_team', code);
+
+            if (currentTeamRef) currentTeamRef.off();
+
+            currentTeamRef = db.ref(`teams/${code}`);
+            currentTeamRef.on('value', (snap) => {
+                teamData = snap.val();
+                if (!teamData) {
+                    showToast('Team was deleted.');
+                    leaveTeam();
+                    return;
+                }
+                renderBoard();
+                renderLog();
+                checkBingoLines();
+            });
+
+            showScreen('game');
+        }
+
+        function leaveTeam() {
+            if (currentTeamRef) currentTeamRef.off();
+            currentTeamRef = null;
+            currentTeamCode = null;
+            teamData = null;
+            localStorage.removeItem('rs3bingo_team');
+            showScreen('lobby');
+        }
+
+        // ═══════════════════════════════════════════
+        //  BOARD RENDERING
+        // ═══════════════════════════════════════════
+        function renderBoard() {
+            if (!teamData) return;
+
+            const tasks = teamData.tasks || DEFAULT_TASKS;
+            const revealed = teamData.revealed || {};
+            const completed = teamData.completed || {};
+
+            document.getElementById('teamNameDisplay').textContent = teamData.name;
+            document.getElementById('teamCodeDisplay').textContent = currentTeamCode;
+
+            const revCount = Object.keys(revealed).length;
+            const compCount = Object.keys(completed).length;
+            document.getElementById('statsDisplay').textContent =
+                `${revCount}/25 revealed · ${compCount} completed`;
+            document.getElementById('progressFill').style.width =
+                `${(compCount / tasks.length) * 100}%`;
+            document.getElementById('revealBtn').disabled = (revCount >= tasks.length);
+
+            const boardEl = document.getElementById('board');
+
+            if (boardEl.querySelectorAll('.tile').length !== tasks.length) {
+                boardEl.innerHTML = '';
+                tasks.forEach((task, i) => {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.dataset.index = i;
+                    tile.innerText = task;
+                    tile.addEventListener('click', () => toggleComplete(i));
+                    boardEl.appendChild(tile);
+                });
+            }
+
+            boardEl.querySelectorAll('.tile').forEach((tile) => {
+                const i = tile.dataset.index;
+                const wasRevealed = tile.classList.contains('revealed') || tile.classList.contains('completed');
+                const isRevealed = revealed[i] === true;
+                const isCompleted = completed[i] === true;
+
+                tile.classList.toggle('revealed', isRevealed && !isCompleted);
+                tile.classList.toggle('completed', isCompleted);
+
+                if (isRevealed && !wasRevealed) {
+                    tile.classList.add('just-revealed');
+                    setTimeout(() => tile.classList.remove('just-revealed'), 600);
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════════
+        //  BINGO LINE DETECTION
+        // ═══════════════════════════════════════════
+        function checkBingoLines() {
+            if (!teamData) return;
+            const c = teamData.completed || {};
+            const lines = [];
+
+            for (let r = 0; r < 5; r++) {
+                if ([0,1,2,3,4].every(col => c[r*5+col])) lines.push(`Row ${r+1}`);
+            }
+            for (let col = 0; col < 5; col++) {
+                if ([0,1,2,3,4].every(r => c[r*5+col])) lines.push(`Col ${col+1}`);
+            }
+            if ([0,1,2,3,4].every(i => c[i*6])) lines.push('Diagonal ↘');
+            if ([0,1,2,3,4].every(i => c[i*5+(4-i)])) lines.push('Diagonal ↙');
+
+            const alert = document.getElementById('bingoAlert');
+            if (lines.length > 0) {
+                alert.classList.remove('hidden');
+                document.getElementById('bingoAlertText').textContent =
+                    `${lines.length} line${lines.length > 1 ? 's' : ''}: ${lines.join(', ')}`;
+            } else {
+                alert.classList.add('hidden');
+            }
+        }
+
+        // ═══════════════════════════════════════════
+        //  GAME ACTIONS
+        // ═══════════════════════════════════════════
+        async function revealRandomTile() {
+            if (!teamData) return;
+            const revealed = teamData.revealed || {};
+            const tasks = teamData.tasks || DEFAULT_TASKS;
+
+            const hidden = [];
+            for (let i = 0; i < tasks.length; i++) {
+                if (!revealed[i]) hidden.push(i);
+            }
+            if (hidden.length === 0) return;
+
+            const pick = hidden[Math.floor(Math.random() * hidden.length)];
+
+            const updates = {};
+            updates[`revealed/${pick}`] = true;
+            updates[`log/${Date.now()}`] = {
+                action: 'reveal',
+                task: tasks[pick],
+                index: pick,
+                time: new Date().toISOString()
+            };
+
+            await db.ref(`teams/${currentTeamCode}`).update(updates);
+        }
+
+        async function toggleComplete(index) {
+            if (!teamData) return;
+            if (!(teamData.revealed || {})[index]) return;
+
+            const isCompleted = (teamData.completed || {})[index] === true;
+
+            const updates = {};
+            updates[`completed/${index}`] = isCompleted ? null : true;
+            updates[`log/${Date.now()}`] = {
+                action: isCompleted ? 'uncomplete' : 'complete',
+                task: teamData.tasks[index],
+                index,
+                time: new Date().toISOString()
+            };
+
+            await db.ref(`teams/${currentTeamCode}`).update(updates);
+        }
+
+
+        // ═══════════════════════════════════════════
+        //  LOG
+        // ═══════════════════════════════════════════
+        function renderLog() {
+            const el = document.getElementById('logEntries');
+            if (!teamData || !teamData.log) {
+                el.innerHTML = '<span class="log-empty">No tasks revealed yet...</span>';
+                return;
+            }
+
+            const entries = Object.values(teamData.log)
+                .sort((a, b) => new Date(b.time) - new Date(a.time))
+                .slice(0, 30);
+
+            if (!entries.length) {
+                el.innerHTML = '<span class="log-empty">No tasks revealed yet...</span>';
+                return;
+            }
+
+            const icons = { reveal: '⚔️', complete: '✅', uncomplete: '↩️', reset: '🔄' };
+
+            el.innerHTML = entries.map(e => {
+                const t = new Date(e.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                return `<div class="log-entry">
+                    <span class="time">${t}</span>
+                    ${icons[e.action] || '•'}
+                    <span class="task-name">${escapeHtml(e.task)}</span>
+                </div>`;
+            }).join('');
+        }
+
+        // ═══════════════════════════════════════════
+        //  UTILITIES
+        // ═══════════════════════════════════════════
+        function copyTeamCode() {
+            navigator.clipboard.writeText(currentTeamCode).then(() => showToast('Team code copied!'));
+        }
+
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        // ═══════════════════════════════════════════
+        //  BOOT
+        // ═══════════════════════════════════════════
+        initLeaderboard();
+
+        const savedTeam = localStorage.getItem('rs3bingo_team');
+        if (savedTeam) {
+            db.ref(`teams/${savedTeam}`).once('value').then(snap => {
+                if (snap.exists()) joinTeamByCode(savedTeam);
+                else { localStorage.removeItem('rs3bingo_team'); showScreen('lobby'); }
+            });
+        } else {
+            showScreen('lobby');
+        }
+    </script>
+</body>
+</html>
