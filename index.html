@@ -679,24 +679,19 @@
     }
 
     // ═══════════════════════════════════════════
-    //  BINGO LINE DETECTION
+    //  FULL BOARD DETECTION
     // ═══════════════════════════════════════════
     function checkBingoLines() {
         if (!teamData) return;
         const c = teamData.completed || {};
-        const lines = [];
-        for (let r = 0; r < 5; r++)
-            if ([0,1,2,3,4].every(col => c[r*5+col])) lines.push(`Row ${r+1}`);
-        for (let col = 0; col < 5; col++)
-            if ([0,1,2,3,4].every(r => c[r*5+col])) lines.push(`Col ${col+1}`);
-        if ([0,1,2,3,4].every(i => c[i*6]))        lines.push('Diagonal ↘');
-        if ([0,1,2,3,4].every(i => c[i*5+(4-i)])) lines.push('Diagonal ↙');
+        const tasks = teamData.tasks || DEFAULT_TASKS;
+        const total = tasks.length;
+        const completedCount = Object.keys(c).length;
 
         const alertEl = document.getElementById('bingoAlert');
-        if (lines.length) {
+        if (completedCount >= total) {
             alertEl.classList.remove('hidden');
-            document.getElementById('bingoAlertText').textContent =
-                `${lines.length} line${lines.length > 1 ? 's' : ''}: ${lines.join(', ')}`;
+            document.getElementById('bingoAlertText').textContent = 'All tasks completed — board clear!';
         } else {
             alertEl.classList.add('hidden');
         }
@@ -719,9 +714,15 @@
         const logBase = Date.now();
 
         if (isCompleted) {
-            // ── UNCOMPLETE: un-reveal the tile ──
+            // ── UNCOMPLETE: back to revealed, remove the tile that was spawned ──
             updates[`completed/${index}`] = null;
-            updates[`revealed/${index}`]  = null;
+            // Keep this tile revealed (it was revealed before completing)
+            // But remove the tile that was revealed as a result of this completion
+            const childTile = getNextRevealForTile(index, currentCode, tasks, revealed, completed);
+            if (childTile !== null && !completed[childTile]) {
+                // Only un-reveal the child if it hasn't been completed itself
+                updates[`revealed/${childTile}`] = null;
+            }
             updates[`log/${logBase}`] = {
                 action: 'uncomplete',
                 task: tasks[index],
