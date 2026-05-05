@@ -8,347 +8,240 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         :root {
-            --bg: #0a0a0f;
-            --surface: #13131a;
-            --tile-bg: #1c1c28;
-            --tile-border: #2a2a3a;
-            --accent: #f0c040;
-            --accent-glow: rgba(240, 192, 64, 0.3);
-            --accent-dim: #b8912e;
-            --text: #d4d4dc;
-            --text-muted: #6a6a7a;
-            --danger: #c0392b;
-            --success: #27ae60;
-            --font-display: 'Cinzel', serif;
-            --font-body: 'Fira Sans', sans-serif;
+            --bg: #0a0a0f; --surface: #13131a; --tile-bg: #1c1c28;
+            --tile-border: #2a2a3a; --accent: #f0c040;
+            --accent-glow: rgba(240,192,64,0.3); --accent-dim: #b8912e;
+            --text: #d4d4dc; --text-muted: #6a6a7a;
+            --danger: #c0392b; --success: #27ae60;
+            --font-display: 'Cinzel', serif; --font-body: 'Fira Sans', sans-serif;
         }
-
-        body {
-            font-family: var(--font-body);
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-        }
-
+        body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; }
         body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse at 20% 50%, rgba(240, 192, 64, 0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 20%, rgba(100, 80, 200, 0.03) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(240,192,64,0.03) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(100,80,200,0.03) 0%, transparent 50%);
         }
-
-        .container {
-            position: relative;
-            z-index: 1;
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 24px 16px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
+        .container { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+        .header { text-align: center; margin-bottom: 32px; }
         .header h1 {
-            font-family: var(--font-display);
-            font-size: clamp(1.6rem, 4vw, 2.2rem);
-            font-weight: 900;
-            color: var(--accent);
-            letter-spacing: 0.06em;
+            font-family: var(--font-display); font-size: clamp(1.6rem, 4vw, 2.2rem);
+            font-weight: 900; color: var(--accent); letter-spacing: 0.06em;
             text-shadow: 0 0 30px var(--accent-glow), 0 2px 4px rgba(0,0,0,0.5);
         }
-
-        .header .subtitle {
-            font-size: 0.8rem;
-            color: var(--danger);
-            margin-top: 6px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-
-        .back-link {
-            display: inline-block;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.85rem;
-            margin-bottom: 20px;
-            transition: color 0.2s;
-        }
-
+        .header .subtitle { font-size: 0.8rem; color: var(--danger); margin-top: 6px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+        .back-link { display: inline-block; color: var(--text-muted); text-decoration: none; font-size: 0.85rem; margin-bottom: 20px; transition: color 0.2s; }
         .back-link:hover { color: var(--accent); }
-
-        /* ── TEAM CARDS ── */
         .team-list { display: flex; flex-direction: column; gap: 12px; }
-
         .team-card {
-            background: var(--surface);
-            border: 1px solid var(--tile-border);
-            border-radius: 8px;
-            padding: 16px 20px;
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 12px;
-            align-items: center;
+            background: var(--surface); border: 1px solid var(--tile-border);
+            border-radius: 8px; padding: 16px 20px;
         }
-
-        .team-info h3 {
-            font-family: var(--font-display);
-            font-size: 1rem;
-            color: var(--accent);
-            margin-bottom: 4px;
-        }
-
-        .team-meta {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-        }
-
-        .team-meta span {
-            margin-right: 12px;
-        }
-
-        .team-meta .code {
-            font-family: monospace;
-            letter-spacing: 0.1em;
-            color: var(--text);
-            background: var(--tile-bg);
-            padding: 1px 6px;
-            border-radius: 3px;
-        }
-
-        .team-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
+        .team-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+        .team-info h3 { font-family: var(--font-display); font-size: 1rem; color: var(--accent); margin-bottom: 4px; }
+        .team-meta { font-size: 0.78rem; color: var(--text-muted); }
+        .team-meta span { margin-right: 12px; }
+        .team-meta .code { font-family: monospace; letter-spacing: 0.1em; color: var(--text); background: var(--tile-bg); padding: 1px 6px; border-radius: 3px; }
+        .team-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .btn {
-            padding: 8px 16px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            font-family: var(--font-body);
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            transition: all 0.2s;
+            padding: 8px 16px; font-size: 0.8rem; font-weight: 600;
+            font-family: var(--font-body); cursor: pointer; border: none;
+            border-radius: 5px; transition: all 0.2s;
         }
-
-        .btn-reset {
-            background: transparent;
-            color: var(--accent);
-            border: 1px solid var(--accent-dim);
-        }
-
-        .btn-reset:hover {
-            background: var(--accent);
-            color: var(--bg);
-        }
-
-        .btn-delete {
-            background: transparent;
-            color: var(--danger);
-            border: 1px solid var(--danger);
-        }
-
-        .btn-delete:hover {
-            background: var(--danger);
-            color: white;
-        }
-
+        .btn-reveal { background: transparent; color: var(--accent); border: 1px solid var(--accent-dim); }
+        .btn-reveal:hover { background: var(--accent); color: var(--bg); }
+        .btn-reset { background: transparent; color: var(--accent); border: 1px solid var(--accent-dim); }
+        .btn-reset:hover { background: var(--accent); color: var(--bg); }
+        .btn-delete { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+        .btn-delete:hover { background: var(--danger); color: white; }
         .btn-nuke {
-            padding: 12px 24px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            background: transparent;
-            color: var(--danger);
-            border: 2px solid var(--danger);
-            font-family: var(--font-body);
-            cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.2s;
-            margin-top: 24px;
-            width: 100%;
+            padding: 12px 24px; font-size: 0.9rem; font-weight: 700;
+            background: transparent; color: var(--danger); border: 2px solid var(--danger);
+            font-family: var(--font-body); cursor: pointer; border-radius: 6px;
+            transition: all 0.2s; margin-top: 24px; width: 100%;
         }
-
-        .btn-nuke:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-muted);
-            font-style: italic;
-        }
-
-        /* ── TOAST ── */
+        .btn-nuke:hover { background: var(--danger); color: white; }
+        .empty-state { text-align: center; padding: 40px; color: var(--text-muted); font-style: italic; }
         .toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
+            position: fixed; bottom: 24px; left: 50%;
             transform: translateX(-50%) translateY(100px);
-            background: var(--surface);
-            border: 1px solid var(--accent-dim);
-            color: var(--text);
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            z-index: 999;
-            transition: transform 0.3s ease;
+            background: var(--surface); border: 1px solid var(--accent-dim);
+            color: var(--text); padding: 12px 24px; border-radius: 8px;
+            font-size: 0.85rem; z-index: 999; transition: transform 0.3s ease;
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
-
         .toast.show { transform: translateX(-50%) translateY(0); }
-
         @media (max-width: 480px) {
-            .team-card { grid-template-columns: 1fr; }
-            .team-actions { justify-content: flex-start; }
+            .team-header { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="index.html" class="back-link">← Back to Bingo</a>
-
-        <header class="header">
-            <h1>Skybreakers Admin</h1>
-            <div class="subtitle">⚠ Destructive actions — handle with care</div>
-        </header>
-
-        <div id="teamList" class="team-list">
-            <div class="empty-state">Loading teams...</div>
-        </div>
-
-        <button class="btn-nuke" onclick="deleteAllTeams()">🗑 Delete ALL Teams</button>
+<div class="container">
+    <a href="index.html" class="back-link">← Back to Bingo</a>
+    <header class="header">
+        <h1>Skybreakers Admin</h1>
+        <div class="subtitle">⚠ Destructive actions — handle with care</div>
+    </header>
+    <div id="teamList" class="team-list">
+        <div class="empty-state">Loading teams...</div>
     </div>
+    <button class="btn-nuke" onclick="deleteAllTeams()">🗑 Delete ALL Teams</button>
+</div>
+<div class="toast" id="toast"></div>
 
-    <div class="toast" id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyAStt7XqfP1gwXaDhFE_1Z8l35smgtCfhk",
+        authDomain: "bingo-57c25.firebaseapp.com",
+        databaseURL: "https://bingo-57c25-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "bingo-57c25",
+        storageBucket: "bingo-57c25.firebasestorage.app",
+        messagingSenderId: "198647199029",
+        appId: "1:198647199029:web:af0be2b9884b748fe1087c"
+    });
+    const db = firebase.database();
 
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    const DEFAULT_TASKS = [
+        "Nex Drop", "Araxxor Leg Piece", "GWD2 Unique", "Telos Orb", "Kerapac Broadcast",
+        "Raksha Codex/Boots", "Croesus Cryptbloom", "Arch-Glacor Unique", "60 Fortunate Comps", "Skilling Pet",
+        "Boss Pet", "Fight Kiln Cape", "Elite Dungeon Drop", "Barrows 2 Weapons", "Clue Broadcast",
+        "DKS: All 4 Rings", "Matriarch Heart", "Zamorakian Drop", "Corporeal Beast Sigil", "QBD 4-piece Bow",
+        "Abyssal Wand/Whip", "Dragon Mattock", "100 ED1 Scales", "Full Godsword", "Legiones Signet"
+    ];
 
-    <script>
-        firebase.initializeApp({
-            apiKey: "AIzaSyAStt7XqfP1gwXaDhFE_1Z8l35smgtCfhk",
-            authDomain: "bingo-57c25.firebaseapp.com",
-            databaseURL: "https://bingo-57c25-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "bingo-57c25",
-            storageBucket: "bingo-57c25.firebasestorage.app",
-            messagingSenderId: "198647199029",
-            appId: "1:198647199029:web:af0be2b9884b748fe1087c",
-            measurementId: "G-115L3D62K2"
+    function shuffleArray(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // Real-time team list
+    db.ref('teams').on('value', snap => {
+        const teams = snap.val();
+        const el = document.getElementById('teamList');
+        if (!teams) { el.innerHTML = '<div class="empty-state">No teams exist.</div>'; return; }
+
+        const entries = Object.entries(teams).sort((a, b) => {
+            const ca = a[1].completed ? Object.keys(a[1].completed).length : 0;
+            const cb = b[1].completed ? Object.keys(b[1].completed).length : 0;
+            return cb - ca;
         });
-        const db = firebase.database();
 
-        const DEFAULT_TASKS = [
-            "Nex Drop", "Araxxor Leg Piece", "GWD2 Unique", "Telos Orb", "Kerapac Broadcast",
-            "Raksha Codex/Boots", "Croesus Cryptbloom", "Arch-Glacor Unique", "60 Fortunate Comps", "Skilling Pet",
-            "Boss Pet", "Fight Kiln Cape", "Elite Dungeon Drop", "Barrows 2 Weapons", "Clue Broadcast",
-            "DKS: All 4 Rings", "Matriarch Heart", "Zamorakian Drop", "Corporeal Beast Sigil", "QBD 4-piece Bow",
-            "Abyssal Wand/Whip", "Dragon Mattock", "100 ED1 Scales", "Full Godsword", "Legiones Signet"
-        ];
+        el.innerHTML = entries.map(([code, data]) => {
+            const revealed  = data.revealed  ? Object.keys(data.revealed).length  : 0;
+            const completed = data.completed ? Object.keys(data.completed).length : 0;
+            const total     = (data.tasks || DEFAULT_TASKS).length;
+            const hidden    = total - revealed - completed;
+            const created   = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '—';
+            const lastAuto  = data.lastAutoReveal ? new Date(data.lastAutoReveal).toLocaleDateString() : '—';
 
-        function shuffleArray(arr) {
-            const a = [...arr];
-            for (let i = a.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [a[i], a[j]] = [a[j], a[i]];
-            }
-            return a;
-        }
-
-        function escapeHtml(str) {
-            const d = document.createElement('div');
-            d.textContent = str;
-            return d.innerHTML;
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2500);
-        }
-
-        // ── Real-time team list ──
-        db.ref('teams').on('value', (snapshot) => {
-            const teams = snapshot.val();
-            const el = document.getElementById('teamList');
-
-            if (!teams) {
-                el.innerHTML = '<div class="empty-state">No teams exist.</div>';
-                return;
-            }
-
-            const entries = Object.entries(teams).sort((a, b) => {
-                const ca = a[1].completed ? Object.keys(a[1].completed).length : 0;
-                const cb = b[1].completed ? Object.keys(b[1].completed).length : 0;
-                return cb - ca;
-            });
-
-            el.innerHTML = entries.map(([code, data]) => {
-                const revealed = data.revealed ? Object.keys(data.revealed).length : 0;
-                const completed = data.completed ? Object.keys(data.completed).length : 0;
-                const total = (data.tasks || DEFAULT_TASKS).length;
-                const created = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '—';
-
-                return `<div class="team-card">
+            return `<div class="team-card">
+                <div class="team-header">
                     <div class="team-info">
                         <h3>${escapeHtml(data.name)}</h3>
                         <div class="team-meta">
                             <span class="code">${code}</span>
-                            <span>${revealed} revealed</span>
-                            <span>${completed}/${total} completed</span>
+                            <span>${revealed} open</span>
+                            <span>${completed} done</span>
+                            <span>${hidden} hidden</span>
                             <span>Created ${created}</span>
                         </div>
                     </div>
                     <div class="team-actions">
+                        <button class="btn btn-reveal" onclick="revealTile('${code}')">⚔ Reveal</button>
                         <button class="btn btn-reset" onclick="resetTeam('${code}', '${escapeHtml(data.name)}')">Reset</button>
                         <button class="btn btn-delete" onclick="deleteTeam('${code}', '${escapeHtml(data.name)}')">Delete</button>
                     </div>
-                </div>`;
-            }).join('');
+                </div>
+            </div>`;
+        }).join('');
+    });
+
+    // Admin: manually reveal a random tile for a team
+    async function revealTile(code) {
+        const snap = await db.ref(`teams/${code}`).once('value');
+        const data = snap.val();
+        if (!data) return;
+
+        const revealed = data.revealed || {};
+        const tasks = data.tasks || DEFAULT_TASKS;
+        const hidden = [];
+        for (let i = 0; i < tasks.length; i++) {
+            if (!revealed[i]) hidden.push(i);
+        }
+        if (hidden.length === 0) { showToast('All tiles are already revealed.'); return; }
+
+        const pick = hidden[Math.floor(Math.random() * hidden.length)];
+        const now = Date.now();
+        const updates = {};
+        updates[`revealed/${pick}`] = true;
+        updates[`log/${now}`] = {
+            action: 'reveal',
+            task: tasks[pick],
+            index: pick,
+            time: new Date(now).toISOString(),
+            source: 'admin'
+        };
+
+        await db.ref(`teams/${code}`).update(updates);
+        showToast(`Revealed "${tasks[pick]}" for team.`);
+    }
+
+    async function resetTeam(code, name) {
+        if (!confirm(`Reset "${name}"? Reshuffles tasks and clears all progress.`)) return;
+        const now = Date.now();
+        const shuffled = shuffleArray(DEFAULT_TASKS);
+
+        // Pre-reveal 2 initial tiles
+        const initialRevealed = {};
+        const initialLog = {};
+        const indices = [...Array(shuffled.length).keys()];
+        for (let r = 0; r < 2 && indices.length > 0; r++) {
+            const pick = Math.floor(Math.random() * indices.length);
+            const idx = indices.splice(pick, 1)[0];
+            initialRevealed[idx] = true;
+            initialLog[now + r] = {
+                action: 'reveal', task: shuffled[idx], index: idx,
+                time: new Date(now + r).toISOString(), source: 'initial'
+            };
+        }
+
+        await db.ref(`teams/${code}`).update({
+            tasks: shuffled,
+            revealed: initialRevealed,
+            completed: null,
+            log: initialLog,
+            lastAutoReveal: now
         });
+        showToast(`"${name}" has been reset.`);
+    }
 
-        // ── Actions ──
-        async function resetTeam(code, name) {
-            if (!confirm(`Reset "${name}"? This reshuffles all tasks and clears progress.`)) return;
+    async function deleteTeam(code, name) {
+        if (!confirm(`Permanently delete "${name}"? Cannot be undone.`)) return;
+        await db.ref(`teams/${code}`).remove();
+        showToast(`"${name}" deleted.`);
+    }
 
-            await db.ref(`teams/${code}`).update({
-                tasks: shuffleArray(DEFAULT_TASKS),
-                revealed: null,
-                completed: null,
-                log: null
-            });
-
-            await db.ref(`teams/${code}/log/${Date.now()}`).set({
-                action: 'reset', task: 'Board reset (admin)', time: new Date().toISOString()
-            });
-
-            showToast(`"${name}" has been reset.`);
-        }
-
-        async function deleteTeam(code, name) {
-            if (!confirm(`Permanently delete "${name}"? This cannot be undone.`)) return;
-            await db.ref(`teams/${code}`).remove();
-            showToast(`"${name}" deleted.`);
-        }
-
-        async function deleteAllTeams() {
-            if (!confirm('DELETE ALL TEAMS? This removes every team and all progress. Cannot be undone.')) return;
-            if (!confirm('Are you really sure? Last chance.')) return;
-            await db.ref('teams').remove();
-            showToast('All teams deleted.');
-        }
-    </script>
+    async function deleteAllTeams() {
+        if (!confirm('DELETE ALL TEAMS? Removes everything. Cannot be undone.')) return;
+        if (!confirm('Are you really sure? Last chance.')) return;
+        await db.ref('teams').remove();
+        showToast('All teams deleted.');
+    }
+</script>
 </body>
 </html>
