@@ -418,20 +418,6 @@
         return Math.abs(h);
     }
 
-    function getNextRevealForTile(completedIndex, teamCode, tasks, revealed, completed) {
-        // Find all tiles that are hidden (not revealed and not completed)
-        const hidden = [];
-        for (let i = 0; i < tasks.length; i++) {
-            if (!revealed[i] && !completed[i]) hidden.push(i);
-        }
-        if (hidden.length === 0) return null;
-
-        // Deterministic pick based on completedIndex + teamCode
-        const seed = `${teamCode}-complete-${completedIndex}`;
-        const pick = seededRandom(seed) % hidden.length;
-        return hidden[pick];
-    }
-
     // ═══════════════════════════════════════════
     //  SCREEN MANAGEMENT
     // ═══════════════════════════════════════════
@@ -654,11 +640,11 @@
         const boardEl = document.getElementById('board');
         if (boardEl.querySelectorAll('.tile').length !== tasks.length) {
             boardEl.innerHTML = '';
-            tasks.forEach((task, i) => {
+            tasks.forEach((_, i) => {
                 const tile = document.createElement('div');
                 tile.className     = 'tile';
                 tile.dataset.index = i;
-                tile.innerText     = task;
+                // No text injected — hidden tiles stay empty in the DOM
                 tile.addEventListener('click', () => toggleComplete(i));
                 boardEl.appendChild(tile);
             });
@@ -669,6 +655,10 @@
             const wasRevealed = tile.classList.contains('revealed') || tile.classList.contains('completed');
             const isRevealed  = revealed[i]  === true;
             const isCompleted = completed[i] === true;
+
+            // Only put text in the DOM if the tile is revealed or completed
+            tile.innerText = (isRevealed || isCompleted) ? tasks[i] : '';
+
             tile.classList.toggle('revealed',  isRevealed && !isCompleted);
             tile.classList.toggle('completed', isCompleted);
             if (isRevealed && !wasRevealed) {
@@ -699,11 +689,19 @@
 
     // ═══════════════════════════════════════════
     //  GAME ACTIONS
+    //
+    //  When completing a tile, we pick a random
+    //  hidden tile to reveal and store the link:
+    //    spawnedBy[childIndex] = parentIndex
+    //  On uncomplete we walk the chain and close
+    //  every descendant that isn't independently
+    //  revealed (initial/auto/admin).
     // ═══════════════════════════════════════════
     async function toggleComplete(index) {
         if (!teamData) return;
         const revealed  = teamData.revealed  || {};
         const completed = teamData.completed || {};
+        const spawnedBy = teamData.spawnedBy || {};
         const tasks     = teamData.tasks     || DEFAULT_TASKS;
 
         // Can only interact with revealed or completed tiles
@@ -714,15 +712,42 @@
         const logBase = Date.now();
 
         if (isCompleted) {
-            // ── UNCOMPLETE: back to revealed, remove the tile that was spawned ──
+            // ── UNCOMPLETE ──
             updates[`completed/${index}`] = null;
-            // Keep this tile revealed (it was revealed before completing)
-            // But remove the tile that was revealed as a result of this completion
-            const childTile = getNextRevealForTile(index, currentCode, tasks, revealed, completed);
-            if (childTile !== null && !completed[childTile]) {
-                // Only un-reveal the child if it hasn't been completed itself
-                updates[`revealed/${childTile}`] = null;
+
+            // Find the child that was spawned by this completion
+            // and cascade: remove child + any grandchildren etc.
+            const toClose = [];
+            let current = null;
+            // Find direct child: spawnedBy[child] === index
+            for (const [childIdx, parentIdx] of Object.entries(spawnedBy)) {
+                if (String(parentIdx) === String(index)) {
+                    current = Number(childIdx);
+                    break;
+                }
             }
+
+            // Walk the chain
+            while (current !== null) {
+                toClose.push(current);
+                // Find if this tile also spawned a child
+                let next = null;
+                for (const [childIdx, parentIdx] of Object.entries(spawnedBy)) {
+                    if (String(parentIdx) === String(current)) {
+                        next = Number(childIdx);
+                        break;
+                    }
+                }
+                current = next;
+            }
+
+            // Close all descendants
+            for (const idx of toClose) {
+                updates[`revealed/${idx}`]  = null;
+                updates[`completed/${idx}`] = null;
+                updates[`spawnedBy/${idx}`] = null;
+            }
+
             updates[`log/${logBase}`] = {
                 action: 'uncomplete',
                 task: tasks[index],
@@ -730,7 +755,7 @@
                 time: new Date(logBase).toISOString()
             };
         } else {
-            // ── COMPLETE: mark done + reveal next tile ──
+            // ── COMPLETE ──
             updates[`completed/${index}`] = true;
             updates[`log/${logBase}`] = {
                 action: 'complete',
@@ -739,10 +764,20 @@
                 time: new Date(logBase).toISOString()
             };
 
-            // Deterministic next reveal
-            const nextTile = getNextRevealForTile(index, currentCode, tasks, revealed, completed);
-            if (nextTile !== null) {
-                updates[`revealed/${nextTile}`] = true;
+            // Find a hidden tile to reveal
+            const hidden = [];
+            for (let i = 0; i < tasks.length; i++) {
+                if (!revealed[i] && !completed[i]) hidden.push(i);
+            }
+
+            if (hidden.length > 0) {
+                // Deterministic pick so re-completing gives the same tile
+                const seed = `${currentCode}-complete-${index}`;
+                const pick = seededRandom(seed) % hidden.length;
+                const nextTile = hidden[pick];
+
+                updates[`revealed/${nextTile}`]  = true;
+                updates[`spawnedBy/${nextTile}`] = index; // track parent
                 updates[`log/${logBase + 1}`] = {
                     action: 'reveal',
                     task: tasks[nextTile],
