@@ -201,7 +201,6 @@
         .btn-primary:hover:not(:disabled) { box-shadow: 0 4px 20px var(--accent-glow); transform: translateY(-1px); }
         .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--tile-border); }
         .btn-secondary:hover:not(:disabled) { border-color: var(--accent-dim); color: var(--accent); }
-        .controls .btn { width: auto; }
 
         /* BOARD */
         .board-wrapper { background: var(--surface); border: 1px solid var(--tile-border); border-radius: 10px; padding: 12px; margin-bottom: 20px; }
@@ -253,10 +252,9 @@
         }
         .tile.just-revealed { animation: tileReveal 0.5s ease-out; }
 
-        .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 16px; }
+        .stats { text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
         .progress-bar { background: var(--tile-bg); border-radius: 20px; height: 6px; margin-bottom: 24px; overflow: hidden; }
         .progress-bar .fill { height: 100%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); border-radius: 20px; transition: width 0.4s ease; }
-        .stats { text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
 
         /* LOG */
         .log { background: var(--surface); border: 1px solid var(--tile-border); border-radius: 8px; padding: 16px; max-height: 200px; overflow-y: auto; }
@@ -360,10 +358,6 @@
             <div class="bingo-board" id="board"></div>
         </div>
 
-        <div class="controls">
-            <button class="btn btn-primary" id="revealBtn" onclick="revealRandomTile()">⚔ Reveal Task</button>
-        </div>
-
         <div class="log">
             <h3>Activity Log</h3>
             <div id="logEntries"><span class="log-empty">No tasks revealed yet...</span></div>
@@ -388,6 +382,12 @@
     });
     const db = firebase.database();
 
+    // ═══════════════════════════════════════════
+    //  CONFIG
+    // ═══════════════════════════════════════════
+    const INITIAL_REVEALS = 2;             // tiles revealed when a team is created
+    const AUTO_REVEAL_INTERVAL_MS = 2 * 24 * 60 * 60 * 1000;  // 2 days in ms
+
     const DEFAULT_TASKS = [
         "Nex Drop", "Araxxor Leg Piece", "GWD2 Unique", "Telos Orb", "Kerapac Broadcast",
         "Raksha Codex/Boots", "Croesus Cryptbloom", "Arch-Glacor Unique", "60 Fortunate Comps", "Skilling Pet",
@@ -396,17 +396,54 @@
         "Abyssal Wand/Whip", "Dragon Mattock", "100 ED1 Scales", "Full Godsword", "Legiones Signet"
     ];
 
+    // ═══════════════════════════════════════════
+    //  STATE
+    // ═══════════════════════════════════════════
     let currentCode = null;
     let currentRef  = null;
     let teamData    = null;
 
+    // ═══════════════════════════════════════════
+    //  SEEDED RANDOM — deterministic "next tile"
+    //  Given a tile index + team code, always
+    //  returns the same pick from hidden tiles.
+    // ═══════════════════════════════════════════
+    function seededRandom(seed) {
+        // Simple hash → number
+        let h = 0;
+        for (let i = 0; i < seed.length; i++) {
+            h = ((h << 5) - h + seed.charCodeAt(i)) | 0;
+        }
+        // Ensure positive
+        return Math.abs(h);
+    }
+
+    function getNextRevealForTile(completedIndex, teamCode, tasks, revealed, completed) {
+        // Find all tiles that are hidden (not revealed and not completed)
+        const hidden = [];
+        for (let i = 0; i < tasks.length; i++) {
+            if (!revealed[i] && !completed[i]) hidden.push(i);
+        }
+        if (hidden.length === 0) return null;
+
+        // Deterministic pick based on completedIndex + teamCode
+        const seed = `${teamCode}-complete-${completedIndex}`;
+        const pick = seededRandom(seed) % hidden.length;
+        return hidden[pick];
+    }
+
+    // ═══════════════════════════════════════════
+    //  SCREEN MANAGEMENT
+    // ═══════════════════════════════════════════
     function showScreen(name) {
         document.getElementById('screen-lobby').classList.toggle('hidden', name !== 'lobby');
         document.getElementById('screen-game').classList.toggle('hidden', name !== 'game');
         document.getElementById('leaderboard-section').classList.toggle('hidden', name !== 'lobby');
     }
 
-    // LEADERBOARD
+    // ═══════════════════════════════════════════
+    //  LEADERBOARD
+    // ═══════════════════════════════════════════
     function initLeaderboard() {
         db.ref('teams').on('value', snap => renderLeaderboard(snap.val()));
     }
@@ -433,7 +470,9 @@
         }).join('');
     }
 
-    // CREATE
+    // ═══════════════════════════════════════════
+    //  TEAM CREATION
+    // ═══════════════════════════════════════════
     function shuffleArray(arr) {
         const a = [...arr];
         for (let i = a.length - 1; i > 0; i--) {
@@ -453,20 +492,43 @@
         const existing = await db.ref(`teams/${code}`).once('value');
         if (existing.exists()) { showToast('That code is already taken — pick another.'); return; }
 
+        const shuffled = shuffleArray(DEFAULT_TASKS);
+        const now = Date.now();
+
+        // Pre-reveal initial tiles
+        const initialRevealed = {};
+        const initialLog = {};
+        const indices = [...Array(shuffled.length).keys()];
+        for (let r = 0; r < INITIAL_REVEALS && indices.length > 0; r++) {
+            const pick = Math.floor(Math.random() * indices.length);
+            const idx = indices.splice(pick, 1)[0];
+            initialRevealed[idx] = true;
+            initialLog[now + r] = {
+                action: 'reveal',
+                task: shuffled[idx],
+                index: idx,
+                time: new Date(now + r).toISOString(),
+                source: 'initial'
+            };
+        }
+
         await db.ref(`teams/${code}`).set({
             name,
-            tasks:     shuffleArray(DEFAULT_TASKS),
-            revealed:  {},
+            tasks: shuffled,
+            revealed: initialRevealed,
             completed: {},
-            log:       {},
-            createdAt: firebase.database.ServerValue.TIMESTAMP
+            log: initialLog,
+            createdAt: firebase.database.ServerValue.TIMESTAMP,
+            lastAutoReveal: firebase.database.ServerValue.TIMESTAMP
         });
 
         showToast(`Team "${name}" created!`);
         enterBoard(code);
     }
 
-    // JOIN
+    // ═══════════════════════════════════════════
+    //  JOIN
+    // ═══════════════════════════════════════════
     async function joinTeam() {
         const code = document.getElementById('joinCodeInput').value.trim();
         if (!code) { showToast('Enter a join code.'); return; }
@@ -475,7 +537,9 @@
         enterBoard(code);
     }
 
-    // ENTER BOARD
+    // ═══════════════════════════════════════════
+    //  ENTER BOARD
+    // ═══════════════════════════════════════════
     function enterBoard(code) {
         currentCode = code;
         localStorage.setItem('rs3bingo_team', code);
@@ -487,6 +551,7 @@
             renderBoard();
             renderLog();
             checkBingoLines();
+            checkAutoReveal();
         });
         showScreen('game');
     }
@@ -498,7 +563,80 @@
         showScreen('lobby');
     }
 
-    // BOARD
+    // ═══════════════════════════════════════════
+    //  AUTO-REVEAL (every 2 days)
+    //  Runs client-side on each data update.
+    //  Uses a transaction to prevent race conditions
+    //  if multiple clients load at the same time.
+    // ═══════════════════════════════════════════
+    let autoRevealRunning = false;
+
+    async function checkAutoReveal() {
+        if (!teamData || autoRevealRunning) return;
+        const lastAuto = teamData.lastAutoReveal || teamData.createdAt || 0;
+        const now = Date.now();
+
+        if (now - lastAuto < AUTO_REVEAL_INTERVAL_MS) return;
+
+        // Calculate how many reveals are due
+        const periodsPassed = Math.floor((now - lastAuto) / AUTO_REVEAL_INTERVAL_MS);
+        if (periodsPassed <= 0) return;
+
+        autoRevealRunning = true;
+
+        // Use a transaction on lastAutoReveal to prevent double-firing
+        try {
+            await db.ref(`teams/${currentCode}/lastAutoReveal`).transaction(current => {
+                if (current && (now - current) < AUTO_REVEAL_INTERVAL_MS) {
+                    // Someone else already updated it
+                    return; // abort
+                }
+                return now;
+            }, async (error, committed) => {
+                if (error || !committed) {
+                    autoRevealRunning = false;
+                    return;
+                }
+
+                // Perform the reveals
+                const revealed = teamData.revealed || {};
+                const tasks = teamData.tasks || DEFAULT_TASKS;
+                const hidden = [];
+                for (let i = 0; i < tasks.length; i++) {
+                    if (!revealed[i]) hidden.push(i);
+                }
+
+                const toReveal = Math.min(periodsPassed, hidden.length);
+                if (toReveal === 0) { autoRevealRunning = false; return; }
+
+                const updates = {};
+                const logBase = Date.now();
+                for (let r = 0; r < toReveal; r++) {
+                    if (hidden.length === 0) break;
+                    const pick = Math.floor(Math.random() * hidden.length);
+                    const idx = hidden.splice(pick, 1)[0];
+                    updates[`revealed/${idx}`] = true;
+                    updates[`log/${logBase + r}`] = {
+                        action: 'reveal',
+                        task: tasks[idx],
+                        index: idx,
+                        time: new Date(logBase + r).toISOString(),
+                        source: 'auto'
+                    };
+                }
+
+                await db.ref(`teams/${currentCode}`).update(updates);
+                showToast(`⏰ ${toReveal} bonus task${toReveal > 1 ? 's' : ''} auto-revealed!`);
+                autoRevealRunning = false;
+            });
+        } catch (e) {
+            autoRevealRunning = false;
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    //  BOARD RENDERING
+    // ═══════════════════════════════════════════
     function renderBoard() {
         if (!teamData) return;
         const tasks     = teamData.tasks     || DEFAULT_TASKS;
@@ -512,7 +650,6 @@
         const compCount = Object.keys(completed).length;
         document.getElementById('statsDisplay').textContent = `${revCount}/25 revealed · ${compCount} completed`;
         document.getElementById('progressFill').style.width = `${(compCount / tasks.length) * 100}%`;
-        document.getElementById('revealBtn').disabled = revCount >= tasks.length;
 
         const boardEl = document.getElementById('board');
         if (boardEl.querySelectorAll('.tile').length !== tasks.length) {
@@ -541,6 +678,9 @@
         });
     }
 
+    // ═══════════════════════════════════════════
+    //  BINGO LINE DETECTION
+    // ═══════════════════════════════════════════
     function checkBingoLines() {
         if (!teamData) return;
         const c = teamData.completed || {};
@@ -562,45 +702,82 @@
         }
     }
 
-    async function revealRandomTile() {
-        if (!teamData) return;
-        const revealed = teamData.revealed || {};
-        const tasks    = teamData.tasks    || DEFAULT_TASKS;
-        const hidden   = tasks.map((_, i) => i).filter(i => !revealed[i]);
-        if (!hidden.length) return;
-        const pick    = hidden[Math.floor(Math.random() * hidden.length)];
-        const updates = {};
-        updates[`revealed/${pick}`]  = true;
-        updates[`log/${Date.now()}`] = { action: 'reveal', task: tasks[pick], index: pick, time: new Date().toISOString() };
-        await db.ref(`teams/${currentCode}`).update(updates);
-    }
-
+    // ═══════════════════════════════════════════
+    //  GAME ACTIONS
+    // ═══════════════════════════════════════════
     async function toggleComplete(index) {
-        if (!teamData || !(teamData.revealed || {})[index]) return;
-        const isCompleted = (teamData.completed || {})[index] === true;
+        if (!teamData) return;
+        const revealed  = teamData.revealed  || {};
+        const completed = teamData.completed || {};
+        const tasks     = teamData.tasks     || DEFAULT_TASKS;
+
+        // Can only interact with revealed or completed tiles
+        if (!revealed[index] && !completed[index]) return;
+
+        const isCompleted = completed[index] === true;
         const updates = {};
-        updates[`completed/${index}`] = isCompleted ? null : true;
-        updates[`log/${Date.now()}`]  = {
-            action: isCompleted ? 'uncomplete' : 'complete',
-            task:   teamData.tasks[index], index,
-            time:   new Date().toISOString()
-        };
+        const logBase = Date.now();
+
+        if (isCompleted) {
+            // ── UNCOMPLETE: un-reveal the tile ──
+            updates[`completed/${index}`] = null;
+            updates[`revealed/${index}`]  = null;
+            updates[`log/${logBase}`] = {
+                action: 'uncomplete',
+                task: tasks[index],
+                index,
+                time: new Date(logBase).toISOString()
+            };
+        } else {
+            // ── COMPLETE: mark done + reveal next tile ──
+            updates[`completed/${index}`] = true;
+            updates[`log/${logBase}`] = {
+                action: 'complete',
+                task: tasks[index],
+                index,
+                time: new Date(logBase).toISOString()
+            };
+
+            // Deterministic next reveal
+            const nextTile = getNextRevealForTile(index, currentCode, tasks, revealed, completed);
+            if (nextTile !== null) {
+                updates[`revealed/${nextTile}`] = true;
+                updates[`log/${logBase + 1}`] = {
+                    action: 'reveal',
+                    task: tasks[nextTile],
+                    index: nextTile,
+                    time: new Date(logBase + 1).toISOString(),
+                    source: 'completion'
+                };
+            }
+        }
+
         await db.ref(`teams/${currentCode}`).update(updates);
     }
 
+    // ═══════════════════════════════════════════
+    //  LOG
+    // ═══════════════════════════════════════════
     function renderLog() {
         const el = document.getElementById('logEntries');
         if (!teamData?.log) { el.innerHTML = '<span class="log-empty">No tasks revealed yet...</span>'; return; }
         const entries = Object.values(teamData.log)
             .sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 30);
         if (!entries.length) { el.innerHTML = '<span class="log-empty">No tasks revealed yet...</span>'; return; }
+
         const icons = { reveal: '⚔️', complete: '✅', uncomplete: '↩️' };
+        const sourceLabels = { initial: ' (start)', auto: ' (bonus)', completion: '' };
+
         el.innerHTML = entries.map(e => {
             const t = new Date(e.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            return `<div class="log-entry"><span class="time">${t}</span>${icons[e.action] || '•'} <span class="task-name">${escapeHtml(e.task)}</span></div>`;
+            const suffix = e.source ? (sourceLabels[e.source] || '') : '';
+            return `<div class="log-entry"><span class="time">${t}</span>${icons[e.action] || '•'} <span class="task-name">${escapeHtml(e.task)}</span>${suffix}</div>`;
         }).join('');
     }
 
+    // ═══════════════════════════════════════════
+    //  UTILITIES
+    // ═══════════════════════════════════════════
     function copyJoinCode() {
         navigator.clipboard.writeText(currentCode).then(() => showToast('Join code copied!'));
     }
@@ -618,7 +795,9 @@
         setTimeout(() => t.classList.remove('show'), 2500);
     }
 
-    // BOOT
+    // ═══════════════════════════════════════════
+    //  BOOT
+    // ═══════════════════════════════════════════
     initLeaderboard();
     const saved = localStorage.getItem('rs3bingo_team');
     if (saved) {
