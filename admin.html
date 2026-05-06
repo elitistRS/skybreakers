@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="https://cdn.discordapp.com/icons/1386222769238315120/e491d2ab03e0cb29ebaa095359ce1265.webp?size=32&quality=lossless">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skybreakers Bingo — Admin</title>
+    <link rel="icon" href="https://cdn.discordapp.com/icons/1386222769238315120/e491d2ab03e0cb29ebaa095359ce1265.webp?size=32&quality=lossless">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -23,7 +23,7 @@
             background: radial-gradient(ellipse at 20% 50%, rgba(240,192,64,0.03) 0%, transparent 50%),
                         radial-gradient(ellipse at 80% 20%, rgba(100,80,200,0.03) 0%, transparent 50%);
         }
-        .container { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+        .container { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 24px 16px; }
         .header { text-align: center; margin-bottom: 32px; }
         .header h1 {
             font-family: var(--font-display); font-size: clamp(1.6rem, 4vw, 2.2rem);
@@ -33,17 +33,86 @@
         .header .subtitle { font-size: 0.8rem; color: var(--danger); margin-top: 6px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
         .back-link { display: inline-block; color: var(--text-muted); text-decoration: none; font-size: 0.85rem; margin-bottom: 20px; transition: color 0.2s; }
         .back-link:hover { color: var(--accent); }
-        .team-list { display: flex; flex-direction: column; gap: 12px; }
+
+        /* TEAM CARDS */
+        .team-list { display: flex; flex-direction: column; gap: 20px; }
         .team-card {
             background: var(--surface); border: 1px solid var(--tile-border);
-            border-radius: 8px; padding: 16px 20px;
+            border-radius: 10px; padding: 20px; transition: border-color 0.2s;
         }
-        .team-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+        .team-card.expanded { border-color: var(--accent-dim); }
+        .team-header {
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; gap: 8px; flex-wrap: wrap;
+        }
         .team-info h3 { font-family: var(--font-display); font-size: 1rem; color: var(--accent); margin-bottom: 4px; }
         .team-meta { font-size: 0.78rem; color: var(--text-muted); }
         .team-meta span { margin-right: 12px; }
         .team-meta .code { font-family: monospace; letter-spacing: 0.1em; color: var(--text); background: var(--tile-bg); padding: 1px 6px; border-radius: 3px; }
         .team-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .expand-hint { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+
+        /* ADMIN BOARD */
+        .admin-board-section {
+            margin-top: 16px; padding-top: 16px;
+            border-top: 1px solid var(--tile-border);
+            display: none;
+        }
+        .team-card.expanded .admin-board-section { display: block; }
+
+        .board-legend {
+            display: flex; gap: 16px; margin-bottom: 12px; font-size: 0.72rem;
+            color: var(--text-muted); flex-wrap: wrap;
+        }
+        .board-legend .swatch {
+            display: inline-block; width: 12px; height: 12px;
+            border-radius: 3px; margin-right: 4px; vertical-align: middle;
+        }
+        .swatch-hidden { background: var(--tile-bg); border: 1px solid var(--tile-border); }
+        .swatch-revealed { background: var(--accent-dim); }
+        .swatch-completed { background: var(--success); }
+
+        .admin-board {
+            display: grid; grid-template-columns: repeat(5, 1fr);
+            gap: 6px; margin-bottom: 12px;
+        }
+        .admin-tile {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; font-size: clamp(0.5rem, 1.6vw, 0.72rem);
+            font-weight: 600; padding: 4px 3px;
+            cursor: pointer; position: relative;
+            transition: all 0.2s; line-height: 1.25;
+            user-select: none;
+        }
+        .admin-tile.state-hidden {
+            background: var(--tile-bg); border: 1px solid var(--tile-border);
+            color: var(--text-muted);
+        }
+        .admin-tile.state-hidden:hover { border-color: var(--accent-dim); color: var(--text); }
+        .admin-tile.state-revealed {
+            background: rgba(184, 145, 46, 0.15); border: 1px solid var(--accent-dim);
+            color: var(--accent);
+        }
+        .admin-tile.state-revealed:hover { background: rgba(184, 145, 46, 0.25); }
+        .admin-tile.state-completed {
+            background: rgba(39, 174, 96, 0.15); border: 1px solid var(--success);
+            color: var(--success);
+        }
+        .admin-tile.state-completed:hover { background: rgba(39, 174, 96, 0.25); }
+
+        .admin-tile .state-label {
+            position: absolute; bottom: 2px; right: 3px;
+            font-size: 0.5rem; opacity: 0.5;
+        }
+
+        .cycle-hint {
+            font-size: 0.7rem; color: var(--text-muted); text-align: center;
+            margin-bottom: 8px; font-style: italic;
+        }
+
+        /* BUTTONS */
         .btn {
             padding: 8px 16px; font-size: 0.8rem; font-weight: 600;
             font-family: var(--font-body); cursor: pointer; border: none;
@@ -63,6 +132,8 @@
         }
         .btn-nuke:hover { background: var(--danger); color: white; }
         .empty-state { text-align: center; padding: 40px; color: var(--text-muted); font-style: italic; }
+
+        /* TOAST */
         .toast {
             position: fixed; bottom: 24px; left: 50%;
             transform: translateX(-50%) translateY(100px);
@@ -72,8 +143,11 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
+
         @media (max-width: 480px) {
             .team-header { flex-direction: column; align-items: flex-start; }
+            .admin-board { gap: 4px; }
+            .admin-tile { font-size: 0.45rem; padding: 3px 2px; }
         }
     </style>
 </head>
@@ -82,7 +156,7 @@
     <a href="index.html" class="back-link">← Back to Bingo</a>
     <header class="header">
         <h1>Skybreakers Admin</h1>
-        <div class="subtitle">⚠ Destructive actions — handle with care</div>
+        <div class="subtitle">⚠ Full board control — handle with care</div>
     </header>
     <div id="teamList" class="team-list">
         <div class="empty-state">Loading teams...</div>
@@ -113,6 +187,8 @@
         "Abyssal Wand/Whip", "Dragon Mattock", "100 ED1 Scales", "Full Godsword", "Legiones Signet"
     ];
 
+    let teamsCache = {};
+
     function shuffleArray(arr) {
         const a = [...arr];
         for (let i = a.length - 1; i > 0; i--) {
@@ -130,9 +206,16 @@
         setTimeout(() => t.classList.remove('show'), 2500);
     }
 
-    // Real-time team list
+    // ═══════════════════════════════════════════
+    //  REAL-TIME TEAM LIST + BOARDS
+    // ═══════════════════════════════════════════
     db.ref('teams').on('value', snap => {
         const teams = snap.val();
+        teamsCache = teams || {};
+        renderTeamList(teams);
+    });
+
+    function renderTeamList(teams) {
         const el = document.getElementById('teamList');
         if (!teams) { el.innerHTML = '<div class="empty-state">No teams exist.</div>'; return; }
 
@@ -142,40 +225,132 @@
             return cb - ca;
         });
 
-        el.innerHTML = entries.map(([code, data]) => {
-            const revealed  = data.revealed  ? Object.keys(data.revealed).length  : 0;
-            const completed = data.completed ? Object.keys(data.completed).length : 0;
-            const total     = (data.tasks || DEFAULT_TASKS).length;
-            const hidden    = total - revealed - completed;
-            const created   = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '—';
-            const lastAuto  = data.lastAutoReveal ? new Date(data.lastAutoReveal).toLocaleDateString() : '—';
+        // Remember which cards are expanded
+        const expandedCodes = new Set();
+        document.querySelectorAll('.team-card.expanded').forEach(c => expandedCodes.add(c.dataset.code));
 
-            return `<div class="team-card">
-                <div class="team-header">
+        el.innerHTML = entries.map(([code, data]) => {
+            const tasks     = data.tasks     || DEFAULT_TASKS;
+            const revealed  = data.revealed  || {};
+            const completed = data.completed || {};
+            const revCount  = Object.keys(revealed).length;
+            const compCount = Object.keys(completed).length;
+            const hidden    = tasks.length - revCount - compCount;
+            const created   = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '—';
+            const isExpanded = expandedCodes.has(code);
+
+            // Build admin board tiles
+            const boardTiles = tasks.map((task, i) => {
+                const isComp = completed[i] === true;
+                const isRev  = revealed[i]  === true;
+                let stateClass, label;
+                if (isComp)      { stateClass = 'state-completed'; label = '✓'; }
+                else if (isRev)  { stateClass = 'state-revealed';  label = '◉'; }
+                else             { stateClass = 'state-hidden';    label = '?'; }
+                return `<div class="admin-tile ${stateClass}" onclick="cycleTile('${code}', ${i})" title="Click to cycle: hidden → revealed → completed → hidden">
+                    ${escapeHtml(task)}
+                    <span class="state-label">${label}</span>
+                </div>`;
+            }).join('');
+
+            return `<div class="team-card ${isExpanded ? 'expanded' : ''}" data-code="${code}">
+                <div class="team-header" onclick="toggleExpand(this)">
                     <div class="team-info">
                         <h3>${escapeHtml(data.name)}</h3>
                         <div class="team-meta">
                             <span class="code">${code}</span>
-                            <span>${revealed} open</span>
-                            <span>${completed} done</span>
+                            <span>${revCount} open</span>
+                            <span>${compCount} done</span>
                             <span>${hidden} hidden</span>
                             <span>Created ${created}</span>
                         </div>
+                        <div class="expand-hint">${isExpanded ? '▲ Click to collapse' : '▼ Click to expand board'}</div>
                     </div>
-                    <div class="team-actions">
+                    <div class="team-actions" onclick="event.stopPropagation()">
                         <button class="btn btn-reveal" onclick="revealTile('${code}')">⚔ Reveal</button>
                         <button class="btn btn-reset" onclick="resetTeam('${code}', '${escapeHtml(data.name)}')">Reset</button>
                         <button class="btn btn-delete" onclick="deleteTeam('${code}', '${escapeHtml(data.name)}')">Delete</button>
                     </div>
                 </div>
+                <div class="admin-board-section">
+                    <div class="board-legend">
+                        <span><span class="swatch swatch-hidden"></span> Hidden</span>
+                        <span><span class="swatch swatch-revealed"></span> Revealed</span>
+                        <span><span class="swatch swatch-completed"></span> Completed</span>
+                    </div>
+                    <div class="cycle-hint">Click any tile to cycle: hidden → revealed → completed → hidden</div>
+                    <div class="admin-board">${boardTiles}</div>
+                </div>
             </div>`;
         }).join('');
-    });
+    }
 
-    // Admin: manually reveal a random tile for a team
+    // ═══════════════════════════════════════════
+    //  EXPAND / COLLAPSE
+    // ═══════════════════════════════════════════
+    function toggleExpand(headerEl) {
+        const card = headerEl.closest('.team-card');
+        card.classList.toggle('expanded');
+        const hint = card.querySelector('.expand-hint');
+        hint.textContent = card.classList.contains('expanded') ? '▲ Click to collapse' : '▼ Click to expand board';
+    }
+
+    // ═══════════════════════════════════════════
+    //  CYCLE TILE STATE (admin only, no chains)
+    //  hidden → revealed → completed → hidden
+    // ═══════════════════════════════════════════
+    async function cycleTile(code, index) {
+        const data = teamsCache[code];
+        if (!data) return;
+
+        const revealed  = data.revealed  || {};
+        const completed = data.completed || {};
+        const tasks     = data.tasks || DEFAULT_TASKS;
+
+        const isRev  = revealed[index]  === true;
+        const isComp = completed[index] === true;
+
+        const updates = {};
+        const now = Date.now();
+        let action, newState;
+
+        if (isComp) {
+            // completed → hidden
+            updates[`completed/${index}`] = null;
+            updates[`revealed/${index}`]  = null;
+            // Also clean up spawnedBy if it exists
+            updates[`spawnedBy/${index}`] = null;
+            action = 'admin-hide';
+            newState = 'hidden';
+        } else if (isRev) {
+            // revealed → completed
+            updates[`completed/${index}`] = true;
+            action = 'admin-complete';
+            newState = 'completed';
+        } else {
+            // hidden → revealed
+            updates[`revealed/${index}`] = true;
+            action = 'admin-reveal';
+            newState = 'revealed';
+        }
+
+        updates[`log/${now}`] = {
+            action,
+            task: tasks[index],
+            index,
+            time: new Date(now).toISOString(),
+            source: 'admin'
+        };
+
+        await db.ref(`teams/${code}`).update(updates);
+        showToast(`"${tasks[index]}" → ${newState}`);
+    }
+
+    // ═══════════════════════════════════════════
+    //  TEAM ACTIONS
+    // ═══════════════════════════════════════════
     async function revealTile(code) {
-        const snap = await db.ref(`teams/${code}`).once('value');
-        const data = snap.val();
+        const data = teamsCache[code];
         if (!data) return;
 
         const revealed = data.revealed || {};
@@ -191,15 +366,12 @@
         const updates = {};
         updates[`revealed/${pick}`] = true;
         updates[`log/${now}`] = {
-            action: 'reveal',
-            task: tasks[pick],
-            index: pick,
-            time: new Date(now).toISOString(),
-            source: 'admin'
+            action: 'reveal', task: tasks[pick], index: pick,
+            time: new Date(now).toISOString(), source: 'admin'
         };
 
         await db.ref(`teams/${code}`).update(updates);
-        showToast(`Revealed "${tasks[pick]}" for team.`);
+        showToast(`Revealed "${tasks[pick]}"`);
     }
 
     async function resetTeam(code, name) {
@@ -207,7 +379,6 @@
         const now = Date.now();
         const shuffled = shuffleArray(DEFAULT_TASKS);
 
-        // Pre-reveal 2 initial tiles
         const initialRevealed = {};
         const initialLog = {};
         const indices = [...Array(shuffled.length).keys()];
@@ -225,6 +396,7 @@
             tasks: shuffled,
             revealed: initialRevealed,
             completed: null,
+            spawnedBy: null,
             log: initialLog,
             lastAutoReveal: now
         });
