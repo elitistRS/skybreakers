@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="https://cdn.discordapp.com/icons/1386222769238315120/e491d2ab03e0cb29ebaa095359ce1265.webp?size=32&quality=lossless">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skybreakers Bingo</title>
@@ -240,11 +239,28 @@
         .tile.completed {
             background: linear-gradient(135deg, #1a2e1a, #1a2e22);
             border-color: var(--success); color: var(--success);
-            box-shadow: inset 0 0 20px rgba(39,174,96,0.1); cursor: pointer;
+            box-shadow: inset 0 0 20px rgba(39,174,96,0.1); cursor: default;
         }
-        .tile.completed::before {
-            content: '✓'; position: absolute; top: 3px; right: 5px;
-            font-size: 0.65rem; color: var(--success); opacity: 0.8;
+        .tile .undo-btn {
+            position: absolute; top: 2px; right: 3px;
+            width: 16px; height: 16px;
+            background: rgba(192, 57, 43, 0.15);
+            border: 1px solid rgba(192, 57, 43, 0.3);
+            border-radius: 3px;
+            color: var(--danger);
+            font-size: 0.55rem;
+            line-height: 14px;
+            text-align: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 2;
+        }
+        .tile.completed:hover .undo-btn { opacity: 1; }
+        .tile .undo-btn:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
         }
         @keyframes tileReveal {
             0%   { transform: scale(0.8) rotateY(90deg); opacity: 0; }
@@ -645,8 +661,11 @@
                 const tile = document.createElement('div');
                 tile.className     = 'tile';
                 tile.dataset.index = i;
-                // No text injected — hidden tiles stay empty in the DOM
-                tile.addEventListener('click', () => toggleComplete(i));
+                tile.addEventListener('click', (e) => {
+                    // Ignore clicks on the undo button
+                    if (e.target.classList.contains('undo-btn')) return;
+                    completeTask(i);
+                });
                 boardEl.appendChild(tile);
             });
         }
@@ -658,7 +677,24 @@
             const isCompleted = completed[i] === true;
 
             // Only put text in the DOM if the tile is revealed or completed
+            // Remove any existing undo button first
+            const existingBtn = tile.querySelector('.undo-btn');
+            if (existingBtn) existingBtn.remove();
+
             tile.innerText = (isRevealed || isCompleted) ? tasks[i] : '';
+
+            // Add undo button for completed tiles
+            if (isCompleted) {
+                const btn = document.createElement('span');
+                btn.className = 'undo-btn';
+                btn.textContent = '✕';
+                btn.title = 'Undo completion';
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    uncompleteTask(i);
+                });
+                tile.appendChild(btn);
+            }
 
             tile.classList.toggle('revealed',  isRevealed && !isCompleted);
             tile.classList.toggle('completed', isCompleted);
@@ -698,96 +734,104 @@
     //  every descendant that isn't independently
     //  revealed (initial/auto/admin).
     // ═══════════════════════════════════════════
-    async function toggleComplete(index) {
+    async function completeTask(index) {
         if (!teamData) return;
         const revealed  = teamData.revealed  || {};
+        const completed = teamData.completed || {};
+        const tasks     = teamData.tasks     || DEFAULT_TASKS;
+
+        // Can only complete revealed (non-completed) tiles
+        if (!revealed[index] || completed[index]) return;
+
+        const updates = {};
+        const logBase = Date.now();
+
+        updates[`completed/${index}`] = true;
+        updates[`log/${logBase}`] = {
+            action: 'complete',
+            task: tasks[index],
+            index,
+            time: new Date(logBase).toISOString()
+        };
+
+        // Find a hidden tile to reveal
+        const hidden = [];
+        for (let i = 0; i < tasks.length; i++) {
+            if (!revealed[i] && !completed[i]) hidden.push(i);
+        }
+
+        if (hidden.length > 0) {
+            const seed = `${currentCode}-complete-${index}`;
+            const pick = seededRandom(seed) % hidden.length;
+            const nextTile = hidden[pick];
+
+            updates[`revealed/${nextTile}`]  = true;
+            updates[`spawnedBy/${nextTile}`] = index;
+            updates[`log/${logBase + 1}`] = {
+                action: 'reveal',
+                task: tasks[nextTile],
+                index: nextTile,
+                time: new Date(logBase + 1).toISOString(),
+                source: 'completion'
+            };
+        }
+
+        await db.ref(`teams/${currentCode}`).update(updates);
+    }
+
+    async function uncompleteTask(index) {
+        if (!teamData) return;
         const completed = teamData.completed || {};
         const spawnedBy = teamData.spawnedBy || {};
         const tasks     = teamData.tasks     || DEFAULT_TASKS;
 
-        // Can only interact with revealed or completed tiles
-        if (!revealed[index] && !completed[index]) return;
+        if (!completed[index]) return;
 
-        const isCompleted = completed[index] === true;
-        const updates = {};
-        const logBase = Date.now();
-
-        if (isCompleted) {
-            // ── UNCOMPLETE ──
-            updates[`completed/${index}`] = null;
-
-            // Find the child that was spawned by this completion
-            // and cascade: remove child + any grandchildren etc.
-            const toClose = [];
-            let current = null;
-            // Find direct child: spawnedBy[child] === index
+        // Count how many tiles will be affected
+        const toClose = [];
+        let current = null;
+        for (const [childIdx, parentIdx] of Object.entries(spawnedBy)) {
+            if (String(parentIdx) === String(index)) {
+                current = Number(childIdx);
+                break;
+            }
+        }
+        while (current !== null) {
+            toClose.push(current);
+            let next = null;
             for (const [childIdx, parentIdx] of Object.entries(spawnedBy)) {
-                if (String(parentIdx) === String(index)) {
-                    current = Number(childIdx);
+                if (String(parentIdx) === String(current)) {
+                    next = Number(childIdx);
                     break;
                 }
             }
-
-            // Walk the chain
-            while (current !== null) {
-                toClose.push(current);
-                // Find if this tile also spawned a child
-                let next = null;
-                for (const [childIdx, parentIdx] of Object.entries(spawnedBy)) {
-                    if (String(parentIdx) === String(current)) {
-                        next = Number(childIdx);
-                        break;
-                    }
-                }
-                current = next;
-            }
-
-            // Close all descendants
-            for (const idx of toClose) {
-                updates[`revealed/${idx}`]  = null;
-                updates[`completed/${idx}`] = null;
-                updates[`spawnedBy/${idx}`] = null;
-            }
-
-            updates[`log/${logBase}`] = {
-                action: 'uncomplete',
-                task: tasks[index],
-                index,
-                time: new Date(logBase).toISOString()
-            };
-        } else {
-            // ── COMPLETE ──
-            updates[`completed/${index}`] = true;
-            updates[`log/${logBase}`] = {
-                action: 'complete',
-                task: tasks[index],
-                index,
-                time: new Date(logBase).toISOString()
-            };
-
-            // Find a hidden tile to reveal
-            const hidden = [];
-            for (let i = 0; i < tasks.length; i++) {
-                if (!revealed[i] && !completed[i]) hidden.push(i);
-            }
-
-            if (hidden.length > 0) {
-                // Deterministic pick so re-completing gives the same tile
-                const seed = `${currentCode}-complete-${index}`;
-                const pick = seededRandom(seed) % hidden.length;
-                const nextTile = hidden[pick];
-
-                updates[`revealed/${nextTile}`]  = true;
-                updates[`spawnedBy/${nextTile}`] = index; // track parent
-                updates[`log/${logBase + 1}`] = {
-                    action: 'reveal',
-                    task: tasks[nextTile],
-                    index: nextTile,
-                    time: new Date(logBase + 1).toISOString(),
-                    source: 'completion'
-                };
-            }
+            current = next;
         }
+
+        // Confirm with user
+        const chainMsg = toClose.length > 0
+            ? `\n\nThis will also close ${toClose.length} tile${toClose.length > 1 ? 's' : ''} that ${toClose.length > 1 ? 'were' : 'was'} unlocked from this chain.`
+            : '';
+        if (!confirm(`Undo "${tasks[index]}"?${chainMsg}`)) return;
+
+        const updates = {};
+        const logBase = Date.now();
+
+        updates[`completed/${index}`] = null;
+
+        // Cascade: close all descendants
+        for (const idx of toClose) {
+            updates[`revealed/${idx}`]  = null;
+            updates[`completed/${idx}`] = null;
+            updates[`spawnedBy/${idx}`] = null;
+        }
+
+        updates[`log/${logBase}`] = {
+            action: 'uncomplete',
+            task: tasks[index],
+            index,
+            time: new Date(logBase).toISOString()
+        };
 
         await db.ref(`teams/${currentCode}`).update(updates);
     }
