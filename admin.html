@@ -79,6 +79,24 @@
         .toast.show { transform: translateX(-50%) translateY(0); }
 
         @media (max-width: 480px) { .team-header { flex-direction: column; align-items: flex-start; } .admin-board { gap: 4px; } .admin-tile { font-size: 0.45rem; padding: 3px 2px; } }
+
+        /* FREE TASKS SECTION */
+        .section { background: var(--surface); border: 1px solid var(--tile-border); border-radius: 10px; padding: 20px; margin-bottom: 28px; }
+        .section h2 { font-family: var(--font-display); font-size: 1rem; color: var(--accent); margin-bottom: 4px; letter-spacing: 0.06em; }
+        .section-sub { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 16px; }
+        .free-task-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+        .free-task-row { display: flex; align-items: center; gap: 8px; }
+        .free-task-row input { flex: 1; padding: 9px 12px; background: var(--tile-bg); border: 1px solid var(--tile-border); border-radius: 5px; color: var(--text); font-family: var(--font-body); font-size: 0.88rem; outline: none; transition: border-color 0.2s; }
+        .free-task-row input:focus { border-color: var(--accent-dim); }
+        .free-task-row .btn-del { background: transparent; color: var(--danger); border: 1px solid rgba(192,57,43,0.35); border-radius: 5px; padding: 7px 11px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+        .free-task-row .btn-del:hover { background: var(--danger); color: white; border-color: var(--danger); }
+        .free-add-row { display: flex; gap: 8px; margin-bottom: 14px; }
+        .free-add-row input { flex: 1; padding: 9px 12px; background: var(--tile-bg); border: 1px solid var(--tile-border); border-radius: 5px; color: var(--text); font-family: var(--font-body); font-size: 0.88rem; outline: none; transition: border-color 0.2s; }
+        .free-add-row input:focus { border-color: var(--accent-dim); }
+        .free-add-row .btn-add { padding: 9px 18px; font-size: 0.88rem; font-weight: 600; background: transparent; color: var(--accent); border: 1px solid var(--accent-dim); border-radius: 5px; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .free-add-row .btn-add:hover { background: var(--accent); color: var(--bg); }
+        .btn-save { width: 100%; padding: 10px; font-size: 0.9rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-dim)); color: #0a0a0f; border: none; border-radius: 6px; cursor: pointer; font-family: var(--font-body); transition: opacity 0.2s; }
+        .btn-save:hover { opacity: 0.88; }
     </style>
 </head>
 <body>
@@ -88,6 +106,19 @@
         <h1>Skybreakers Admin</h1>
         <div class="subtitle">⚠ Full board control — handle with care</div>
     </header>
+
+    <!-- FREE TASKS SECTION -->
+    <div class="section">
+        <h2>⭐ Free Tasks</h2>
+        <p class="section-sub">These tasks are always visible to every team. Changes apply globally and immediately on save.</p>
+        <div class="free-task-list" id="freeTaskList"></div>
+        <div class="free-add-row">
+            <input type="text" id="freeNewInput" placeholder="New free task..." maxlength="80" onkeydown="if(event.key==='Enter')freeAdd()">
+            <button class="btn-add" onclick="freeAdd()">+ Add</button>
+        </div>
+        <button class="btn-save" onclick="freeSave()">💾 Save Free Tasks</button>
+    </div>
+
     <div id="teamList" class="team-list"><div class="empty-state">Loading teams...</div></div>
     <button class="btn-nuke" onclick="deleteAllTeams()">🗑 Delete ALL Teams</button>
 </div>
@@ -270,6 +301,66 @@
         await db.ref('teams').remove();
         showToast('All teams deleted.');
     }
+    // ═══════════════════════════════════════════
+    //  FREE TASKS
+    // ═══════════════════════════════════════════
+    const DEFAULT_FREE_TASKS = [
+        "Claim a quest cape",
+        "Reach max total level",
+        "Complete a 5-star Elite Dungeon"
+    ];
+
+    let freeDraft = [];
+
+    // Load from Firebase on init
+    db.ref('config/freeTasks').once('value').then(snap => {
+        freeDraft = snap.val() || DEFAULT_FREE_TASKS;
+        renderFreeList();
+    });
+
+    function renderFreeList() {
+        const list = document.getElementById('freeTaskList');
+        if (!freeDraft.length) {
+            list.innerHTML = '<div style="color:var(--text-muted);font-size:0.82rem;font-style:italic;padding:4px 0;">No free tasks yet.</div>';
+            return;
+        }
+        list.innerHTML = freeDraft.map((task, i) =>
+            `<div class="free-task-row">
+                <input type="text" value="${escapeHtml(task)}" oninput="freeDraft[${i}]=this.value" placeholder="Task name...">
+                <button class="btn-del" onclick="freeRemove(${i})" title="Remove">✕</button>
+            </div>`
+        ).join('');
+    }
+
+    function freeAdd() {
+        const input = document.getElementById('freeNewInput');
+        const val = input.value.trim();
+        if (!val) return;
+        freeDraft.push(val);
+        input.value = '';
+        renderFreeList();
+        // Focus the last added input
+        const rows = document.querySelectorAll('#freeTaskList .free-task-row input');
+        if (rows.length) rows[rows.length - 1].focus();
+    }
+
+    function freeRemove(i) {
+        freeDraft.splice(i, 1);
+        renderFreeList();
+    }
+
+    async function freeSave() {
+        // Sync any inline edits from inputs before saving
+        document.querySelectorAll('#freeTaskList .free-task-row input').forEach((inp, i) => {
+            if (i < freeDraft.length) freeDraft[i] = inp.value.trim();
+        });
+        const cleaned = freeDraft.filter(t => t.length > 0);
+        await db.ref('config/freeTasks').set(cleaned);
+        freeDraft = cleaned;
+        renderFreeList();
+        showToast('✅ Free tasks saved!');
+    }
+
 </script>
 </body>
 </html>
