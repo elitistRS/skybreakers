@@ -1,156 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="https://cdn.discordapp.com/icons/1386222769238315120/e491d2ab03e0cb29ebaa095359ce1265.webp?size=32&quality=lossless">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skybreakers Bingo</title>
+    <link rel="icon" href="https://cdn.discordapp.com/icons/1386222769238315120/e491d2ab03e0cb29ebaa095359ce1265.webp?size=32&quality=lossless">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg: #0a0a0f;
-            --surface: #13131a;
-            --tile-bg: #1c1c28;
-            --tile-border: #2a2a3a;
-            --tile-revealed-bg: #1a1a2e;
-            --accent: #f0c040;
-            --accent-glow: rgba(240, 192, 64, 0.3);
-            --accent-dim: #b8912e;
-            --text: #d4d4dc;
-            --text-muted: #6a6a7a;
-            --danger: #c0392b;
-            --success: #27ae60;
-            --font-display: 'Cinzel', serif;
-            --font-body: 'Fira Sans', sans-serif;
+            --bg: #0a0a0f; --surface: #13131a; --tile-bg: #1c1c28;
+            --tile-border: #2a2a3a; --tile-revealed-bg: #1a1a2e;
+            --accent: #f0c040; --accent-glow: rgba(240,192,64,0.3); --accent-dim: #b8912e;
+            --text: #d4d4dc; --text-muted: #6a6a7a;
+            --danger: #c0392b; --success: #27ae60;
+            --font-display: 'Cinzel', serif; --font-body: 'Fira Sans', sans-serif;
         }
 
-        body {
-            font-family: var(--font-body);
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
+        body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
         body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse at 20% 50%, rgba(240, 192, 64, 0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 20%, rgba(100, 80, 200, 0.03) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(240,192,64,0.03) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(100,80,200,0.03) 0%, transparent 50%);
         }
 
-        .container {
-            position: relative;
-            z-index: 1;
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 24px 16px;
-        }
+        .container { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 24px 16px; }
 
         .header { text-align: center; margin-bottom: 32px; }
         .header h1 {
-            font-family: var(--font-display);
-            font-size: clamp(1.8rem, 5vw, 2.6rem);
-            font-weight: 900;
-            color: var(--accent);
-            letter-spacing: 0.06em;
+            font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 2.6rem);
+            font-weight: 900; color: var(--accent); letter-spacing: 0.06em;
             text-shadow: 0 0 30px var(--accent-glow), 0 2px 4px rgba(0,0,0,0.5);
         }
-        .header .subtitle {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 6px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
+        .header .subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 6px; letter-spacing: 0.1em; text-transform: uppercase; }
 
         /* LEADERBOARD */
-        .leaderboard {
-            background: var(--surface);
-            border: 1px solid var(--tile-border);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 28px;
-        }
-        .leaderboard h2 {
-            font-family: var(--font-display);
-            font-size: 1.1rem;
-            color: var(--accent);
-            margin-bottom: 16px;
-            letter-spacing: 0.06em;
-            text-align: center;
-        }
-        .leaderboard-empty {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            font-style: italic;
-            padding: 12px 0;
-        }
-        .lb-team {
-            display: grid;
-            grid-template-columns: 32px 1fr 90px 60px;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            border-radius: 6px;
-            margin-bottom: 6px;
-        }
+        .leaderboard { background: var(--surface); border: 1px solid var(--tile-border); border-radius: 10px; padding: 20px; margin-bottom: 28px; }
+        .leaderboard h2 { font-family: var(--font-display); font-size: 1.1rem; color: var(--accent); margin-bottom: 16px; letter-spacing: 0.06em; text-align: center; }
+        .leaderboard-empty { text-align: center; color: var(--text-muted); font-size: 0.85rem; font-style: italic; padding: 12px 0; }
+        .lb-team { display: grid; grid-template-columns: 32px 1fr 90px 60px; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; margin-bottom: 6px; }
         .lb-rank { font-family: var(--font-display); font-weight: 900; font-size: 1.1rem; text-align: center; }
-        .lb-rank.gold   { color: #f0c040; }
-        .lb-rank.silver { color: #b0b0b8; }
-        .lb-rank.bronze { color: #cd7f32; }
-        .lb-rank.normal { color: var(--text-muted); }
+        .lb-rank.gold { color: #f0c040; } .lb-rank.silver { color: #b0b0b8; } .lb-rank.bronze { color: #cd7f32; } .lb-rank.normal { color: var(--text-muted); }
         .lb-name { font-weight: 600; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .lb-bar-wrapper { background: var(--tile-bg); border-radius: 10px; height: 8px; overflow: hidden; }
         .lb-bar { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); transition: width 0.6s ease; }
         .lb-score { text-align: right; font-size: 0.8rem; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
 
         /* TEAM BAR */
-        .team-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--surface);
-            border: 1px solid var(--tile-border);
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+        .team-bar { display: flex; align-items: center; justify-content: space-between; background: var(--surface); border: 1px solid var(--tile-border); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
         .team-bar .team-name { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--accent); }
-        .team-bar .team-code {
-            font-family: monospace;
-            font-size: 0.95rem;
-            background: var(--tile-bg);
-            padding: 4px 12px;
-            border-radius: 4px;
-            letter-spacing: 0.15em;
-            color: var(--text);
-            cursor: pointer;
-            transition: background 0.2s;
-            user-select: all;
-        }
+        .team-bar .team-code { font-family: monospace; font-size: 0.95rem; background: var(--tile-bg); padding: 4px 12px; border-radius: 4px; letter-spacing: 0.15em; color: var(--text); cursor: pointer; transition: background 0.2s; user-select: all; }
         .team-bar .team-code:hover { background: var(--tile-border); }
-        .team-bar .leave-btn {
-            font-size: 0.75rem;
-            padding: 4px 12px;
-            background: transparent;
-            border: 1px solid var(--text-muted);
-            color: var(--text-muted);
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: var(--font-body);
-            transition: all 0.2s;
-        }
+        .team-bar .leave-btn { font-size: 0.75rem; padding: 4px 12px; background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); border-radius: 4px; cursor: pointer; font-family: var(--font-body); transition: all 0.2s; }
         .team-bar .leave-btn:hover { border-color: var(--danger); color: var(--danger); }
 
         /* LOBBY */
@@ -158,47 +61,17 @@
         .lobby h2 { font-family: var(--font-display); font-size: 1.3rem; color: var(--accent); margin-bottom: 24px; }
         .lobby-actions { display: flex; flex-direction: column; gap: 16px; max-width: 380px; margin: 0 auto; }
         .field-stack { display: flex; flex-direction: column; gap: 8px; }
-        input {
-            padding: 12px 16px;
-            background: var(--surface);
-            border: 1px solid var(--tile-border);
-            border-radius: 6px;
-            color: var(--text);
-            font-family: var(--font-body);
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-            width: 100%;
-        }
+        input { padding: 12px 16px; background: var(--surface); border: 1px solid var(--tile-border); border-radius: 6px; color: var(--text); font-family: var(--font-body); font-size: 1rem; outline: none; transition: border-color 0.2s; width: 100%; }
         input:focus { border-color: var(--accent-dim); }
         input::placeholder { color: var(--text-muted); }
         .hint { font-size: 0.75rem; color: var(--text-muted); text-align: left; line-height: 1.5; }
-        .divider {
-            display: flex; align-items: center; gap: 16px;
-            color: var(--text-muted); font-size: 0.8rem;
-            text-transform: uppercase; letter-spacing: 0.15em;
-        }
+        .divider { display: flex; align-items: center; gap: 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.15em; }
         .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--tile-border); }
 
         /* BUTTONS */
-        .btn {
-            padding: 12px 24px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            font-family: var(--font-body);
-            cursor: pointer;
-            border: none;
-            border-radius: 6px;
-            transition: all 0.2s;
-            letter-spacing: 0.02em;
-            width: 100%;
-        }
+        .btn { padding: 12px 24px; font-size: 0.95rem; font-weight: 600; font-family: var(--font-body); cursor: pointer; border: none; border-radius: 6px; transition: all 0.2s; letter-spacing: 0.02em; width: 100%; }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent), var(--accent-dim));
-            color: #0a0a0f;
-            box-shadow: 0 2px 12px var(--accent-glow);
-        }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-dim)); color: #0a0a0f; box-shadow: 0 2px 12px var(--accent-glow); }
         .btn-primary:hover:not(:disabled) { box-shadow: 0 4px 20px var(--accent-glow); transform: translateY(-1px); }
         .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--tile-border); }
         .btn-secondary:hover:not(:disabled) { border-color: var(--accent-dim); color: var(--accent); }
@@ -207,35 +80,20 @@
         .board-wrapper { background: var(--surface); border: 1px solid var(--tile-border); border-radius: 10px; padding: 12px; margin-bottom: 20px; }
         .bingo-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
         .tile {
-            aspect-ratio: 1;
-            background: var(--tile-bg);
-            border: 1px solid var(--tile-border);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-size: clamp(0.55rem, 1.8vw, 0.78rem);
-            font-weight: 600;
-            padding: 6px 4px;
-            position: relative;
-            cursor: default;
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
-            line-height: 1.3;
+            aspect-ratio: 1; background: var(--tile-bg); border: 1px solid var(--tile-border);
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            text-align: center; font-size: clamp(0.55rem, 1.8vw, 0.78rem); font-weight: 600;
+            padding: 6px 4px; position: relative; cursor: default;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; line-height: 1.3;
         }
-        .tile:not(.revealed):not(.completed) { color: transparent; }
-        .tile:not(.revealed):not(.completed)::after {
-            content: '?'; position: absolute;
-            color: var(--text-muted); font-size: 1.6rem;
-            font-family: var(--font-display); opacity: 0.4;
+        .tile.hidden-tile { color: transparent; }
+        .tile.hidden-tile::after {
+            content: '?'; position: absolute; color: var(--text-muted);
+            font-size: 1.6rem; font-family: var(--font-display); opacity: 0.4;
         }
-        .tile:not(.revealed):not(.completed):hover { border-color: var(--text-muted); }
         .tile.revealed {
-            background: var(--tile-revealed-bg); color: var(--accent);
-            border-color: var(--accent-dim);
-            box-shadow: inset 0 0 20px rgba(240,192,64,0.08), 0 0 8px rgba(240,192,64,0.1);
-            cursor: pointer;
+            background: var(--tile-revealed-bg); color: var(--accent); border-color: var(--accent-dim);
+            box-shadow: inset 0 0 20px rgba(240,192,64,0.08), 0 0 8px rgba(240,192,64,0.1); cursor: pointer;
         }
         .tile.completed {
             background: linear-gradient(135deg, #1a2e1a, #1a2e22);
@@ -245,27 +103,17 @@
         .tile .undo-btn {
             position: absolute; top: 2px; right: 3px;
             width: 16px; height: 16px;
-            background: rgba(192, 57, 43, 0.15);
-            border: 1px solid rgba(192, 57, 43, 0.3);
-            border-radius: 3px;
-            color: var(--danger);
-            font-size: 0.55rem;
-            line-height: 14px;
-            text-align: center;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 2;
+            background: rgba(192, 57, 43, 0.15); border: 1px solid rgba(192, 57, 43, 0.3);
+            border-radius: 3px; color: var(--danger); font-size: 0.55rem;
+            line-height: 14px; text-align: center; cursor: pointer;
+            opacity: 0; transition: opacity 0.2s; z-index: 2;
         }
         .tile.completed:hover .undo-btn { opacity: 1; }
-        .tile .undo-btn:hover {
-            background: var(--danger);
-            color: white;
-            border-color: var(--danger);
-        }
+        .tile .undo-btn:hover { background: var(--danger); color: white; border-color: var(--danger); }
+
         @keyframes tileReveal {
-            0%   { transform: scale(0.8) rotateY(90deg); opacity: 0; }
-            50%  { transform: scale(1.05) rotateY(0deg); opacity: 1; }
+            0% { transform: scale(0.8) rotateY(90deg); opacity: 0; }
+            50% { transform: scale(1.05) rotateY(0deg); opacity: 1; }
             100% { transform: scale(1); }
         }
         .tile.just-revealed { animation: tileReveal 0.5s ease-out; }
@@ -294,12 +142,10 @@
 
         /* TOAST */
         .toast {
-            position: fixed; bottom: 24px; left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--surface); border: 1px solid var(--accent-dim);
-            color: var(--text); padding: 12px 24px; border-radius: 8px;
-            font-size: 0.85rem; z-index: 999; transition: transform 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: var(--surface); border: 1px solid var(--accent-dim); color: var(--text);
+            padding: 12px 24px; border-radius: 8px; font-size: 0.85rem; z-index: 999;
+            transition: transform 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
 
@@ -318,58 +164,48 @@
 </head>
 <body>
 <div class="container">
-
     <header class="header">
         <h1>Skybreakers Bingo</h1>
         <div class="subtitle">Clan PvM &amp; Skilling Challenge</div>
     </header>
 
-    <!-- LEADERBOARD -->
     <div id="leaderboard-section" class="leaderboard">
         <h2>⚔ Leaderboard</h2>
-        <div id="leaderboardContent">
-            <div class="leaderboard-empty">No teams yet — create one to get started!</div>
-        </div>
+        <div id="leaderboardContent"><div class="leaderboard-empty">No teams yet — create one to get started!</div></div>
     </div>
 
-    <!-- LOBBY -->
     <div id="screen-lobby">
         <div class="lobby">
             <h2>Join or Create a Team</h2>
             <div class="lobby-actions">
-
                 <div class="field-stack">
                     <input type="text" id="teamNameInput" placeholder="Team name..." maxlength="30">
                     <input type="text" id="teamCodeInput" placeholder="Choose a join code (e.g. skybreak24)..." maxlength="30">
                     <button class="btn btn-primary" onclick="createTeam()">Create Team</button>
                     <p class="hint">Share this join code with your teammates — it's the only way to access your board.</p>
                 </div>
-
                 <div class="divider"><span>or join existing</span></div>
-
                 <div class="field-stack">
                     <input type="text" id="joinCodeInput" placeholder="Enter join code...">
                     <button class="btn btn-secondary" onclick="joinTeam()">Join Team</button>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- GAME SCREEN -->
     <div id="screen-game" class="hidden">
         <div class="team-bar">
             <span class="team-name" id="teamNameDisplay"></span>
-            <span class="team-code" id="teamCodeDisplay" title="Click to copy join code" onclick="copyJoinCode()"></span>
+            <span class="team-code" id="teamCodeDisplay" title="Click to copy" onclick="copyJoinCode()"></span>
             <button class="leave-btn" onclick="leaveTeam()">← Back</button>
         </div>
 
         <div id="bingoAlert" class="bingo-alert hidden">
-            <h3>🎉 BINGO!</h3>
-            <p id="bingoAlertText"></p>
+            <h3>🎉 BOARD COMPLETE!</h3>
+            <p>All tasks completed — incredible work!</p>
         </div>
 
-        <div class="stats" id="statsDisplay">0 / 25 revealed</div>
+        <div class="stats" id="statsDisplay">0 / 25 completed</div>
         <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
 
         <div class="board-wrapper">
@@ -381,7 +217,6 @@
             <div id="logEntries"><span class="log-empty">No tasks revealed yet...</span></div>
         </div>
     </div>
-
 </div>
 
 <div class="toast" id="toast"></div>
@@ -403,8 +238,9 @@
     // ═══════════════════════════════════════════
     //  CONFIG
     // ═══════════════════════════════════════════
-    const INITIAL_REVEALS = 2;             // tiles revealed when a team is created
-    const AUTO_REVEAL_INTERVAL_MS = 2 * 24 * 60 * 60 * 1000;  // 2 days in ms
+    const INITIAL_REVEALS = 2;
+    const AUTO_REVEAL_INTERVAL_MS = 2 * 24 * 60 * 60 * 1000;
+    const TOTAL_TASKS = 25;
 
     const DEFAULT_TASKS = [
         "Nex Drop", "Araxxor Leg Piece", "GWD2 Unique", "Telos Orb", "Kerapac Broadcast",
@@ -415,29 +251,41 @@
     ];
 
     // ═══════════════════════════════════════════
-    //  STATE
+    //  DATA MODEL
+    //
+    //  team = {
+    //    name: "Team Name",
+    //    tasks: [...25 shuffled tasks...],   // tasks[0] = first in chain, tasks[24] = last
+    //    chain: {
+    //      revealed: 2,    // how many tiles are visible (index 0..revealed-1 on the chain)
+    //      completed: 0    // how many tiles are completed (index 0..completed-1 on the chain)
+    //    },
+    //    order: [14, 3, 22, ...],   // board position → chain position mapping
+    //                                // order[boardIndex] = chainIndex
+    //    log: { ... }
+    //  }
+    //
+    //  The chain is linear: tasks[0], tasks[1], ..., tasks[24]
+    //  "order" maps each board square (0-24) to a chain position,
+    //  so the board layout looks random but the reveal order is fixed.
+    //
+    //  Tile state:
+    //    chainIndex < completed        → completed (green)
+    //    chainIndex < revealed         → revealed (gold, clickable)
+    //    chainIndex >= revealed         → hidden
+    //
+    //  Complete: only the lowest non-completed revealed tile can be completed.
+    //            completing it: completed++, and if completed == revealed, revealed++
+    //  Uncomplete: only the last completed tile. completed--, revealed stays.
+    //              BUT if revealed was bumped by that completion, revealed-- too.
     // ═══════════════════════════════════════════
+
     let currentCode = null;
     let currentRef  = null;
     let teamData    = null;
 
     // ═══════════════════════════════════════════
-    //  SEEDED RANDOM — deterministic "next tile"
-    //  Given a tile index + team code, always
-    //  returns the same pick from hidden tiles.
-    // ═══════════════════════════════════════════
-    function seededRandom(seed) {
-        // Simple hash → number
-        let h = 0;
-        for (let i = 0; i < seed.length; i++) {
-            h = ((h << 5) - h + seed.charCodeAt(i)) | 0;
-        }
-        // Ensure positive
-        return Math.abs(h);
-    }
-
-    // ═══════════════════════════════════════════
-    //  SCREEN MANAGEMENT
+    //  SCREEN
     // ═══════════════════════════════════════════
     function showScreen(name) {
         document.getElementById('screen-lobby').classList.toggle('hidden', name !== 'lobby');
@@ -456,17 +304,16 @@
         const el = document.getElementById('leaderboardContent');
         if (!teams) { el.innerHTML = '<div class="leaderboard-empty">No teams yet — create one to get started!</div>'; return; }
         const sorted = Object.entries(teams).map(([, data]) => {
-            const completed = data.completed ? Object.keys(data.completed).length : 0;
-            const revealed  = data.revealed  ? Object.keys(data.revealed).length  : 0;
-            const total     = (data.tasks || DEFAULT_TASKS).length;
-            return { name: data.name, completed, revealed, total };
-        }).sort((a, b) => b.completed - a.completed || b.revealed - a.revealed);
+            const comp = data.chain ? data.chain.completed || 0 : 0;
+            const total = (data.tasks || DEFAULT_TASKS).length;
+            return { name: data.name, completed: comp, total };
+        }).sort((a, b) => b.completed - a.completed);
 
-        const rankClass = ['gold', 'silver', 'bronze'];
+        const rc = ['gold', 'silver', 'bronze'];
         el.innerHTML = sorted.map((t, i) => {
             const pct = t.total > 0 ? (t.completed / t.total) * 100 : 0;
             return `<div class="lb-team">
-                <div class="lb-rank ${rankClass[i] || 'normal'}">${i + 1}</div>
+                <div class="lb-rank ${rc[i] || 'normal'}">${i + 1}</div>
                 <div class="lb-name">${escapeHtml(t.name)}</div>
                 <div class="lb-bar-wrapper"><div class="lb-bar" style="width:${pct}%"></div></div>
                 <div class="lb-score">${t.completed}/${t.total}</div>
@@ -475,7 +322,7 @@
     }
 
     // ═══════════════════════════════════════════
-    //  TEAM CREATION
+    //  CREATE TEAM
     // ═══════════════════════════════════════════
     function shuffleArray(arr) {
         const a = [...arr];
@@ -496,31 +343,24 @@
         const existing = await db.ref(`teams/${code}`).once('value');
         if (existing.exists()) { showToast('That code is already taken — pick another.'); return; }
 
-        const shuffled = shuffleArray(DEFAULT_TASKS);
+        const tasks = shuffleArray(DEFAULT_TASKS);
+        // order maps board positions to chain positions (random layout)
+        const order = shuffleArray([...Array(TOTAL_TASKS).keys()]);
         const now = Date.now();
 
-        // Pre-reveal initial tiles
-        const initialRevealed = {};
         const initialLog = {};
-        const indices = [...Array(shuffled.length).keys()];
-        for (let r = 0; r < INITIAL_REVEALS && indices.length > 0; r++) {
-            const pick = Math.floor(Math.random() * indices.length);
-            const idx = indices.splice(pick, 1)[0];
-            initialRevealed[idx] = true;
-            initialLog[now + r] = {
-                action: 'reveal',
-                task: shuffled[idx],
-                index: idx,
-                time: new Date(now + r).toISOString(),
-                source: 'initial'
+        for (let i = 0; i < INITIAL_REVEALS; i++) {
+            initialLog[now + i] = {
+                action: 'reveal', task: tasks[i], chainIndex: i,
+                time: new Date(now + i).toISOString(), source: 'initial'
             };
         }
 
         await db.ref(`teams/${code}`).set({
             name,
-            tasks: shuffled,
-            revealed: initialRevealed,
-            completed: {},
+            tasks,
+            order,
+            chain: { revealed: INITIAL_REVEALS, completed: 0 },
             log: initialLog,
             createdAt: firebase.database.ServerValue.TIMESTAMP,
             lastAutoReveal: firebase.database.ServerValue.TIMESTAMP
@@ -541,9 +381,6 @@
         enterBoard(code);
     }
 
-    // ═══════════════════════════════════════════
-    //  ENTER BOARD
-    // ═══════════════════════════════════════════
     function enterBoard(code) {
         currentCode = code;
         localStorage.setItem('rs3bingo_team', code);
@@ -554,7 +391,6 @@
             if (!teamData) { showToast('Team was deleted.'); leaveTeam(); return; }
             renderBoard();
             renderLog();
-            checkBingoLines();
             checkAutoReveal();
         });
         showScreen('game');
@@ -568,10 +404,7 @@
     }
 
     // ═══════════════════════════════════════════
-    //  AUTO-REVEAL (every 2 days)
-    //  Runs client-side on each data update.
-    //  Uses a transaction to prevent race conditions
-    //  if multiple clients load at the same time.
+    //  AUTO-REVEAL
     // ═══════════════════════════════════════════
     let autoRevealRunning = false;
 
@@ -579,63 +412,41 @@
         if (!teamData || autoRevealRunning) return;
         const lastAuto = teamData.lastAutoReveal || teamData.createdAt || 0;
         const now = Date.now();
-
         if (now - lastAuto < AUTO_REVEAL_INTERVAL_MS) return;
 
-        // Calculate how many reveals are due
-        const periodsPassed = Math.floor((now - lastAuto) / AUTO_REVEAL_INTERVAL_MS);
-        if (periodsPassed <= 0) return;
+        const periods = Math.floor((now - lastAuto) / AUTO_REVEAL_INTERVAL_MS);
+        if (periods <= 0) return;
 
         autoRevealRunning = true;
-
-        // Use a transaction on lastAutoReveal to prevent double-firing
         try {
             await db.ref(`teams/${currentCode}/lastAutoReveal`).transaction(current => {
-                if (current && (now - current) < AUTO_REVEAL_INTERVAL_MS) {
-                    // Someone else already updated it
-                    return; // abort
-                }
+                if (current && (now - current) < AUTO_REVEAL_INTERVAL_MS) return;
                 return now;
             }, async (error, committed) => {
-                if (error || !committed) {
-                    autoRevealRunning = false;
-                    return;
-                }
+                if (error || !committed) { autoRevealRunning = false; return; }
 
-                // Perform the reveals
-                const revealed = teamData.revealed || {};
+                const chain = teamData.chain || { revealed: INITIAL_REVEALS, completed: 0 };
                 const tasks = teamData.tasks || DEFAULT_TASKS;
-                const hidden = [];
-                for (let i = 0; i < tasks.length; i++) {
-                    if (!revealed[i]) hidden.push(i);
-                }
+                const newRevealed = Math.min(chain.revealed + periods, tasks.length);
+                const added = newRevealed - chain.revealed;
 
-                const toReveal = Math.min(periodsPassed, hidden.length);
-                if (toReveal === 0) { autoRevealRunning = false; return; }
+                if (added <= 0) { autoRevealRunning = false; return; }
 
-                const updates = {};
+                const updates = { 'chain/revealed': newRevealed };
                 const logBase = Date.now();
-                for (let r = 0; r < toReveal; r++) {
-                    if (hidden.length === 0) break;
-                    const pick = Math.floor(Math.random() * hidden.length);
-                    const idx = hidden.splice(pick, 1)[0];
-                    updates[`revealed/${idx}`] = true;
-                    updates[`log/${logBase + r}`] = {
-                        action: 'reveal',
-                        task: tasks[idx],
-                        index: idx,
-                        time: new Date(logBase + r).toISOString(),
-                        source: 'auto'
+                for (let i = 0; i < added; i++) {
+                    const ci = chain.revealed + i;
+                    updates[`log/${logBase + i}`] = {
+                        action: 'reveal', task: tasks[ci], chainIndex: ci,
+                        time: new Date(logBase + i).toISOString(), source: 'auto'
                     };
                 }
 
                 await db.ref(`teams/${currentCode}`).update(updates);
-                showToast(`⏰ ${toReveal} bonus task${toReveal > 1 ? 's' : ''} auto-revealed!`);
+                showToast(`⏰ ${added} bonus task${added > 1 ? 's' : ''} auto-revealed!`);
                 autoRevealRunning = false;
             });
-        } catch (e) {
-            autoRevealRunning = false;
-        }
+        } catch { autoRevealRunning = false; }
     }
 
     // ═══════════════════════════════════════════
@@ -643,63 +454,74 @@
     // ═══════════════════════════════════════════
     function renderBoard() {
         if (!teamData) return;
-        const tasks     = teamData.tasks     || DEFAULT_TASKS;
-        const revealed  = teamData.revealed  || {};
-        const completed = teamData.completed || {};
+        const tasks = teamData.tasks || DEFAULT_TASKS;
+        const order = teamData.order || [...Array(TOTAL_TASKS).keys()];
+        const chain = teamData.chain || { revealed: INITIAL_REVEALS, completed: 0 };
 
         document.getElementById('teamNameDisplay').textContent = teamData.name;
         document.getElementById('teamCodeDisplay').textContent = currentCode;
 
-        const revCount  = Object.keys(revealed).length;
-        const compCount = Object.keys(completed).length;
-        document.getElementById('statsDisplay').textContent = `${revCount}/25 revealed · ${compCount} completed`;
-        document.getElementById('progressFill').style.width = `${(compCount / tasks.length) * 100}%`;
+        document.getElementById('statsDisplay').textContent = `${chain.completed}/${tasks.length} completed`;
+        document.getElementById('progressFill').style.width = `${(chain.completed / tasks.length) * 100}%`;
+
+        // Full board complete?
+        const alertEl = document.getElementById('bingoAlert');
+        alertEl.classList.toggle('hidden', chain.completed < tasks.length);
 
         const boardEl = document.getElementById('board');
+
+        // Build tiles if needed
         if (boardEl.querySelectorAll('.tile').length !== tasks.length) {
             boardEl.innerHTML = '';
-            tasks.forEach((_, i) => {
+            for (let boardIdx = 0; boardIdx < tasks.length; boardIdx++) {
                 const tile = document.createElement('div');
-                tile.className     = 'tile';
-                tile.dataset.index = i;
+                tile.className = 'tile';
+                tile.dataset.boardIndex = boardIdx;
                 tile.addEventListener('click', (e) => {
-                    // Ignore clicks on the undo button
                     if (e.target.classList.contains('undo-btn')) return;
-                    completeTask(i);
+                    handleTileClick(boardIdx);
                 });
                 boardEl.appendChild(tile);
-            });
+            }
         }
 
+        // Update tile states
         boardEl.querySelectorAll('.tile').forEach(tile => {
-            const i           = tile.dataset.index;
-            const wasRevealed = tile.classList.contains('revealed') || tile.classList.contains('completed');
-            const isRevealed  = revealed[i]  === true;
-            const isCompleted = completed[i] === true;
+            const boardIdx = Number(tile.dataset.boardIndex);
+            const chainIdx = order[boardIdx];
 
-            // Only put text in the DOM if the tile is revealed or completed
-            // Remove any existing undo button first
-            const existingBtn = tile.querySelector('.undo-btn');
-            if (existingBtn) existingBtn.remove();
+            const wasVisible = tile.classList.contains('revealed') || tile.classList.contains('completed');
+            const isCompleted = chainIdx < chain.completed;
+            const isRevealed  = chainIdx < chain.revealed && !isCompleted;
+            const isHidden    = chainIdx >= chain.revealed;
 
-            tile.innerText = (isRevealed || isCompleted) ? tasks[i] : '';
+            // Remove old undo button
+            const oldBtn = tile.querySelector('.undo-btn');
+            if (oldBtn) oldBtn.remove();
 
-            // Add undo button for completed tiles
-            if (isCompleted) {
+            // Set text: only if visible
+            tile.innerText = (isCompleted || isRevealed) ? tasks[chainIdx] : '';
+
+            // Add undo button only on the LAST completed tile
+            if (isCompleted && chainIdx === chain.completed - 1) {
                 const btn = document.createElement('span');
                 btn.className = 'undo-btn';
                 btn.textContent = '✕';
-                btn.title = 'Undo completion';
+                btn.title = 'Undo this completion';
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    uncompleteTask(i);
+                    uncompleteLastTask();
                 });
                 tile.appendChild(btn);
             }
 
-            tile.classList.toggle('revealed',  isRevealed && !isCompleted);
-            tile.classList.toggle('completed', isCompleted);
-            if (isRevealed && !wasRevealed) {
+            tile.classList.remove('hidden-tile', 'revealed', 'completed', 'just-revealed');
+            if (isHidden)        tile.classList.add('hidden-tile');
+            else if (isRevealed) tile.classList.add('revealed');
+            else if (isCompleted) tile.classList.add('completed');
+
+            // Animate newly revealed
+            if ((isRevealed || isCompleted) && !wasVisible) {
                 tile.classList.add('just-revealed');
                 setTimeout(() => tile.classList.remove('just-revealed'), 600);
             }
@@ -707,131 +529,69 @@
     }
 
     // ═══════════════════════════════════════════
-    //  FULL BOARD DETECTION
-    // ═══════════════════════════════════════════
-    function checkBingoLines() {
-        if (!teamData) return;
-        const c = teamData.completed || {};
-        const tasks = teamData.tasks || DEFAULT_TASKS;
-        const total = tasks.length;
-        const completedCount = Object.keys(c).length;
-
-        const alertEl = document.getElementById('bingoAlert');
-        if (completedCount >= total) {
-            alertEl.classList.remove('hidden');
-            document.getElementById('bingoAlertText').textContent = 'All tasks completed — board clear!';
-        } else {
-            alertEl.classList.add('hidden');
-        }
-    }
-
-    // ═══════════════════════════════════════════
     //  GAME ACTIONS
-    //
-    //  When completing a tile, we pick a random
-    //  hidden tile to reveal and store the link:
-    //    spawnedBy[childIndex] = parentIndex
-    //  On uncomplete we walk the chain and close
-    //  every descendant that isn't independently
-    //  revealed (initial/auto/admin).
     // ═══════════════════════════════════════════
-    async function completeTask(index) {
+    async function handleTileClick(boardIdx) {
         if (!teamData) return;
-        const revealed  = teamData.revealed  || {};
-        const completed = teamData.completed || {};
-        const tasks     = teamData.tasks     || DEFAULT_TASKS;
+        const order = teamData.order || [...Array(TOTAL_TASKS).keys()];
+        const chain = teamData.chain || { revealed: INITIAL_REVEALS, completed: 0 };
+        const tasks = teamData.tasks || DEFAULT_TASKS;
+        const chainIdx = order[boardIdx];
 
-        // Can only complete revealed (non-completed) tiles
-        if (!revealed[index] || completed[index]) return;
+        // Can only complete the next tile in the chain
+        if (chainIdx !== chain.completed) return;
+        // Must be revealed
+        if (chainIdx >= chain.revealed) return;
 
         const updates = {};
-        const logBase = Date.now();
+        const now = Date.now();
 
-        updates[`completed/${index}`] = true;
-        updates[`log/${logBase}`] = {
-            action: 'complete',
-            task: tasks[index],
-            index,
-            time: new Date(logBase).toISOString()
+        // Complete this tile
+        const newCompleted = chain.completed + 1;
+        updates['chain/completed'] = newCompleted;
+        updates[`log/${now}`] = {
+            action: 'complete', task: tasks[chainIdx], chainIndex: chainIdx,
+            time: new Date(now).toISOString()
         };
 
-        // Find a hidden tile to reveal
-        const hidden = [];
-        for (let i = 0; i < tasks.length; i++) {
-            if (!revealed[i] && !completed[i]) hidden.push(i);
-        }
-
-        if (hidden.length > 0) {
-            const seed = `${currentCode}-complete-${index}`;
-            const pick = seededRandom(seed) % hidden.length;
-            const nextTile = hidden[pick];
-
-            updates[`revealed/${nextTile}`]  = true;
-            updates[`spawnedBy/${nextTile}`] = index;
-            updates[`log/${logBase + 1}`] = {
-                action: 'reveal',
-                task: tasks[nextTile],
-                index: nextTile,
-                time: new Date(logBase + 1).toISOString(),
-                source: 'completion'
+        // If all revealed tiles are now completed, reveal the next one
+        if (newCompleted >= chain.revealed && chain.revealed < tasks.length) {
+            updates['chain/revealed'] = chain.revealed + 1;
+            updates[`log/${now + 1}`] = {
+                action: 'reveal', task: tasks[chain.revealed], chainIndex: chain.revealed,
+                time: new Date(now + 1).toISOString(), source: 'completion'
             };
         }
 
         await db.ref(`teams/${currentCode}`).update(updates);
     }
 
-    async function uncompleteTask(index) {
+    async function uncompleteLastTask() {
         if (!teamData) return;
-        const completed = teamData.completed || {};
-        const spawnedBy = teamData.spawnedBy || {};
-        const tasks     = teamData.tasks     || DEFAULT_TASKS;
+        const chain = teamData.chain || { revealed: INITIAL_REVEALS, completed: 0 };
+        const tasks = teamData.tasks || DEFAULT_TASKS;
 
-        if (!completed[index]) return;
+        if (chain.completed <= 0) return;
 
-        // Count how many tiles will be affected
-        const toClose = [];
-        let current = null;
-        for (const [childIdx, parentIdx] of Object.entries(spawnedBy)) {
-            if (String(parentIdx) === String(index)) {
-                current = Number(childIdx);
-                break;
-            }
-        }
-        while (current !== null) {
-            toClose.push(current);
-            let next = null;
-            for (const [childIdx, parentIdx] of Object.entries(spawnedBy)) {
-                if (String(parentIdx) === String(current)) {
-                    next = Number(childIdx);
-                    break;
-                }
-            }
-            current = next;
-        }
-
-        // Confirm with user
-        const chainMsg = toClose.length > 0
-            ? `\n\nThis will also close ${toClose.length} tile${toClose.length > 1 ? 's' : ''} that ${toClose.length > 1 ? 'were' : 'was'} unlocked from this chain.`
-            : '';
-        if (!confirm(`Undo "${tasks[index]}"?${chainMsg}`)) return;
+        const lastCompletedIdx = chain.completed - 1;
+        if (!confirm(`Undo "${tasks[lastCompletedIdx]}"? This will also close any tile that was revealed by this completion.`)) return;
 
         const updates = {};
-        const logBase = Date.now();
+        const now = Date.now();
 
-        updates[`completed/${index}`] = null;
+        updates['chain/completed'] = lastCompletedIdx;
 
-        // Cascade: close all descendants
-        for (const idx of toClose) {
-            updates[`revealed/${idx}`]  = null;
-            updates[`completed/${idx}`] = null;
-            updates[`spawnedBy/${idx}`] = null;
+        // If the reveal was bumped by this completion, pull it back
+        // (revealed should be max(completed, base_revealed))
+        // Simple rule: if revealed == completed + 1 (meaning the reveal
+        // was triggered by the completion), pull revealed back too.
+        if (chain.revealed === chain.completed + 1 && chain.revealed > INITIAL_REVEALS) {
+            updates['chain/revealed'] = chain.revealed - 1;
         }
 
-        updates[`log/${logBase}`] = {
-            action: 'uncomplete',
-            task: tasks[index],
-            index,
-            time: new Date(logBase).toISOString()
+        updates[`log/${now}`] = {
+            action: 'uncomplete', task: tasks[lastCompletedIdx], chainIndex: lastCompletedIdx,
+            time: new Date(now).toISOString()
         };
 
         await db.ref(`teams/${currentCode}`).update(updates);
@@ -848,7 +608,7 @@
         if (!entries.length) { el.innerHTML = '<span class="log-empty">No tasks revealed yet...</span>'; return; }
 
         const icons = { reveal: '⚔️', complete: '✅', uncomplete: '↩️' };
-        const sourceLabels = { initial: ' (start)', auto: ' (bonus)', completion: '' };
+        const sourceLabels = { initial: ' (start)', auto: ' (bonus)', completion: '', admin: ' (admin)' };
 
         el.innerHTML = entries.map(e => {
             const t = new Date(e.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -860,22 +620,9 @@
     // ═══════════════════════════════════════════
     //  UTILITIES
     // ═══════════════════════════════════════════
-    function copyJoinCode() {
-        navigator.clipboard.writeText(currentCode).then(() => showToast('Join code copied!'));
-    }
-
-    function escapeHtml(str) {
-        const d = document.createElement('div');
-        d.textContent = str;
-        return d.innerHTML;
-    }
-
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2500);
-    }
+    function copyJoinCode() { navigator.clipboard.writeText(currentCode).then(() => showToast('Join code copied!')); }
+    function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
 
     // ═══════════════════════════════════════════
     //  BOOT
@@ -887,9 +634,7 @@
             if (snap.exists()) enterBoard(saved);
             else { localStorage.removeItem('rs3bingo_team'); showScreen('lobby'); }
         });
-    } else {
-        showScreen('lobby');
-    }
+    } else { showScreen('lobby'); }
 </script>
 </body>
 </html>
