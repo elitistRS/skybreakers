@@ -361,6 +361,7 @@
             tasks,
             order,
             chain: { revealed: INITIAL_REVEALS, completed: 0 },
+            completedIndices: [],
             log: initialLog,
             createdAt: firebase.database.ServerValue.TIMESTAMP,
             lastAutoReveal: firebase.database.ServerValue.TIMESTAMP
@@ -457,16 +458,17 @@
         const tasks = teamData.tasks || DEFAULT_TASKS;
         const order = teamData.order || [...Array(TOTAL_TASKS).keys()];
         const chain = teamData.chain || { revealed: INITIAL_REVEALS, completed: 0 };
+        const completedSet = new Set(teamData.completedIndices || []);
 
         document.getElementById('teamNameDisplay').textContent = teamData.name;
         document.getElementById('teamCodeDisplay').textContent = currentCode;
 
-        document.getElementById('statsDisplay').textContent = `${chain.completed}/${tasks.length} completed`;
-        document.getElementById('progressFill').style.width = `${(chain.completed / tasks.length) * 100}%`;
+        document.getElementById('statsDisplay').textContent = `${completedSet.size}/${tasks.length} completed`;
+        document.getElementById('progressFill').style.width = `${(completedSet.size / tasks.length) * 100}%`;
 
         // Full board complete?
         const alertEl = document.getElementById('bingoAlert');
-        alertEl.classList.toggle('hidden', chain.completed < tasks.length);
+        alertEl.classList.toggle('hidden', completedSet.size < tasks.length);
 
         const boardEl = document.getElementById('board');
 
@@ -491,7 +493,7 @@
             const chainIdx = order[boardIdx];
 
             const wasVisible = tile.classList.contains('revealed') || tile.classList.contains('completed');
-            const isCompleted = chainIdx < chain.completed;
+            const isCompleted = completedSet.has(chainIdx);
             const isRevealed  = chainIdx < chain.revealed && !isCompleted;
             const isHidden    = chainIdx >= chain.revealed;
 
@@ -502,8 +504,10 @@
             // Set text: only if visible
             tile.innerText = (isCompleted || isRevealed) ? tasks[chainIdx] : '';
 
-            // Add undo button only on the LAST completed tile
-            if (isCompleted && chainIdx === chain.completed - 1) {
+            // Add undo button only on the LAST completed tile (highest chainIdx in completedIndices)
+            const completedArr = teamData.completedIndices || [];
+            const lastCompletedChainIdx = completedArr.length > 0 ? Math.max(...completedArr) : -1;
+            if (isCompleted && chainIdx === lastCompletedChainIdx) {
                 const btn = document.createElement('span');
                 btn.className = 'undo-btn';
                 btn.textContent = '✕';
@@ -538,24 +542,25 @@
         const tasks = teamData.tasks || DEFAULT_TASKS;
         const chainIdx = order[boardIdx];
 
-        // Can only complete the next tile in the chain
-        if (chainIdx !== chain.completed) return;
-        // Must be revealed
-        if (chainIdx >= chain.revealed) return;
+        // Must be revealed but not yet completed
+        const completedSet = new Set(teamData.completedIndices || []);
+        if (chainIdx >= chain.revealed) return;       // not revealed yet
+        if (completedSet.has(chainIdx)) return;        // already completed
 
         const updates = {};
         const now = Date.now();
 
-        // Complete this tile
-        const newCompleted = chain.completed + 1;
-        updates['chain/completed'] = newCompleted;
+        // Mark this specific tile as completed
+        const newCompletedIndices = [...completedSet, chainIdx];
+        updates['completedIndices'] = newCompletedIndices;
+        updates['chain/completed'] = newCompletedIndices.length;
         updates[`log/${now}`] = {
             action: 'complete', task: tasks[chainIdx], chainIndex: chainIdx,
             time: new Date(now).toISOString()
         };
 
-        // If all revealed tiles are now completed, reveal the next one
-        if (newCompleted >= chain.revealed && chain.revealed < tasks.length) {
+        // Reveal the next unrevealed tile in the sequence (if any)
+        if (chain.revealed < tasks.length) {
             updates['chain/revealed'] = chain.revealed + 1;
             updates[`log/${now + 1}`] = {
                 action: 'reveal', task: tasks[chain.revealed], chainIndex: chain.revealed,
@@ -570,27 +575,32 @@
         if (!teamData) return;
         const chain = teamData.chain || { revealed: INITIAL_REVEALS, completed: 0 };
         const tasks = teamData.tasks || DEFAULT_TASKS;
+        const completedIndices = teamData.completedIndices || [];
 
-        if (chain.completed <= 0) return;
+        if (completedIndices.length === 0) return;
 
-        const lastCompletedIdx = chain.completed - 1;
-        if (!confirm(`Undo "${tasks[lastCompletedIdx]}"? This will also close any tile that was revealed by this completion.`)) return;
+        // The last completed tile in sequence order is the one with the highest chainIdx
+        // (i.e. the one that was most recently revealed before being completed)
+        // We find the completed tile that was revealed last = highest chainIndex in completedIndices
+        const lastChainIdx = Math.max(...completedIndices);
+        const lastTask = tasks[lastChainIdx];
+
+        if (!confirm(`Undo "${lastTask}"? This will also close the tile that was revealed by this completion.`)) return;
 
         const updates = {};
         const now = Date.now();
 
-        updates['chain/completed'] = lastCompletedIdx;
+        const newCompletedIndices = completedIndices.filter(i => i !== lastChainIdx);
+        updates['completedIndices'] = newCompletedIndices;
+        updates['chain/completed'] = newCompletedIndices.length;
 
-        // If the reveal was bumped by this completion, pull it back
-        // (revealed should be max(completed, base_revealed))
-        // Simple rule: if revealed == completed + 1 (meaning the reveal
-        // was triggered by the completion), pull revealed back too.
-        if (chain.revealed === chain.completed + 1 && chain.revealed > INITIAL_REVEALS) {
+        // Pull back the reveal that was triggered by this completion
+        if (chain.revealed > INITIAL_REVEALS) {
             updates['chain/revealed'] = chain.revealed - 1;
         }
 
         updates[`log/${now}`] = {
-            action: 'uncomplete', task: tasks[lastCompletedIdx], chainIndex: lastCompletedIdx,
+            action: 'uncomplete', task: lastTask, chainIndex: lastChainIdx,
             time: new Date(now).toISOString()
         };
 
