@@ -18,33 +18,18 @@
             --font-display: 'Cinzel', serif; --font-body: 'Fira Sans', sans-serif;
         }
         body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; }
-        body::before {
-            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-            background: radial-gradient(ellipse at 20% 50%, rgba(240,192,64,0.03) 0%, transparent 50%),
-                        radial-gradient(ellipse at 80% 20%, rgba(100,80,200,0.03) 0%, transparent 50%);
-        }
+        body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; background: radial-gradient(ellipse at 20% 50%, rgba(240,192,64,0.03) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(100,80,200,0.03) 0%, transparent 50%); }
         .container { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 24px 16px; }
         .header { text-align: center; margin-bottom: 32px; }
-        .header h1 {
-            font-family: var(--font-display); font-size: clamp(1.6rem, 4vw, 2.2rem);
-            font-weight: 900; color: var(--accent); letter-spacing: 0.06em;
-            text-shadow: 0 0 30px var(--accent-glow), 0 2px 4px rgba(0,0,0,0.5);
-        }
+        .header h1 { font-family: var(--font-display); font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 900; color: var(--accent); letter-spacing: 0.06em; text-shadow: 0 0 30px var(--accent-glow), 0 2px 4px rgba(0,0,0,0.5); }
         .header .subtitle { font-size: 0.8rem; color: var(--danger); margin-top: 6px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
         .back-link { display: inline-block; color: var(--text-muted); text-decoration: none; font-size: 0.85rem; margin-bottom: 20px; transition: color 0.2s; }
         .back-link:hover { color: var(--accent); }
 
-        /* TEAM CARDS */
         .team-list { display: flex; flex-direction: column; gap: 20px; }
-        .team-card {
-            background: var(--surface); border: 1px solid var(--tile-border);
-            border-radius: 10px; padding: 20px; transition: border-color 0.2s;
-        }
+        .team-card { background: var(--surface); border: 1px solid var(--tile-border); border-radius: 10px; padding: 20px; transition: border-color 0.2s; }
         .team-card.expanded { border-color: var(--accent-dim); }
-        .team-header {
-            display: flex; justify-content: space-between; align-items: center;
-            cursor: pointer; gap: 8px; flex-wrap: wrap;
-        }
+        .team-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 8px; flex-wrap: wrap; }
         .team-info h3 { font-family: var(--font-display); font-size: 1rem; color: var(--accent); margin-bottom: 4px; }
         .team-meta { font-size: 0.78rem; color: var(--text-muted); }
         .team-meta span { margin-right: 12px; }
@@ -52,103 +37,48 @@
         .team-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .expand-hint { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
 
-        /* ADMIN BOARD */
-        .admin-board-section {
-            margin-top: 16px; padding-top: 16px;
-            border-top: 1px solid var(--tile-border);
-            display: none;
-        }
+        .admin-board-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--tile-border); display: none; }
         .team-card.expanded .admin-board-section { display: block; }
 
-        .board-legend {
-            display: flex; gap: 16px; margin-bottom: 12px; font-size: 0.72rem;
-            color: var(--text-muted); flex-wrap: wrap;
-        }
-        .board-legend .swatch {
-            display: inline-block; width: 12px; height: 12px;
-            border-radius: 3px; margin-right: 4px; vertical-align: middle;
-        }
+        .chain-controls { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+        .chain-controls label { font-size: 0.78rem; color: var(--text-muted); }
+        .chain-controls input[type="number"] { width: 60px; padding: 6px 8px; background: var(--tile-bg); border: 1px solid var(--tile-border); border-radius: 4px; color: var(--text); font-size: 0.85rem; text-align: center; }
+        .chain-controls input[type="number"]:focus { border-color: var(--accent-dim); outline: none; }
+
+        .board-legend { display: flex; gap: 16px; margin-bottom: 12px; font-size: 0.72rem; color: var(--text-muted); flex-wrap: wrap; }
+        .board-legend .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 4px; vertical-align: middle; }
         .swatch-hidden { background: var(--tile-bg); border: 1px solid var(--tile-border); }
         .swatch-revealed { background: var(--accent-dim); }
         .swatch-completed { background: var(--success); }
 
-        .admin-board {
-            display: grid; grid-template-columns: repeat(5, 1fr);
-            gap: 6px; margin-bottom: 12px;
-        }
+        .admin-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 12px; }
         .admin-tile {
-            aspect-ratio: 1;
-            border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
-            text-align: center; font-size: clamp(0.5rem, 1.6vw, 0.72rem);
-            font-weight: 600; padding: 4px 3px;
-            cursor: pointer; position: relative;
-            transition: all 0.2s; line-height: 1.25;
-            user-select: none;
+            aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center;
+            justify-content: center; text-align: center; font-size: clamp(0.5rem, 1.6vw, 0.72rem);
+            font-weight: 600; padding: 4px 3px; position: relative;
+            transition: all 0.2s; line-height: 1.25; user-select: none;
         }
-        .admin-tile.state-hidden {
-            background: var(--tile-bg); border: 1px solid var(--tile-border);
-            color: var(--text-muted);
-        }
-        .admin-tile.state-hidden:hover { border-color: var(--accent-dim); color: var(--text); }
-        .admin-tile.state-revealed {
-            background: rgba(184, 145, 46, 0.15); border: 1px solid var(--accent-dim);
-            color: var(--accent);
-        }
-        .admin-tile.state-revealed:hover { background: rgba(184, 145, 46, 0.25); }
-        .admin-tile.state-completed {
-            background: rgba(39, 174, 96, 0.15); border: 1px solid var(--success);
-            color: var(--success);
-        }
-        .admin-tile.state-completed:hover { background: rgba(39, 174, 96, 0.25); }
+        .admin-tile.state-hidden { background: var(--tile-bg); border: 1px solid var(--tile-border); color: var(--text-muted); }
+        .admin-tile.state-revealed { background: rgba(184,145,46,0.15); border: 1px solid var(--accent-dim); color: var(--accent); }
+        .admin-tile.state-completed { background: rgba(39,174,96,0.15); border: 1px solid var(--success); color: var(--success); }
+        .admin-tile .chain-label { position: absolute; top: 2px; left: 3px; font-size: 0.45rem; opacity: 0.5; font-family: monospace; }
+        .admin-tile .state-label { position: absolute; bottom: 2px; right: 3px; font-size: 0.5rem; opacity: 0.5; }
 
-        .admin-tile .state-label {
-            position: absolute; bottom: 2px; right: 3px;
-            font-size: 0.5rem; opacity: 0.5;
-        }
-
-        .cycle-hint {
-            font-size: 0.7rem; color: var(--text-muted); text-align: center;
-            margin-bottom: 8px; font-style: italic;
-        }
-
-        /* BUTTONS */
-        .btn {
-            padding: 8px 16px; font-size: 0.8rem; font-weight: 600;
-            font-family: var(--font-body); cursor: pointer; border: none;
-            border-radius: 5px; transition: all 0.2s;
-        }
+        .btn { padding: 8px 16px; font-size: 0.8rem; font-weight: 600; font-family: var(--font-body); cursor: pointer; border: none; border-radius: 5px; transition: all 0.2s; }
         .btn-reveal { background: transparent; color: var(--accent); border: 1px solid var(--accent-dim); }
         .btn-reveal:hover { background: var(--accent); color: var(--bg); }
         .btn-reset { background: transparent; color: var(--accent); border: 1px solid var(--accent-dim); }
         .btn-reset:hover { background: var(--accent); color: var(--bg); }
         .btn-delete { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
         .btn-delete:hover { background: var(--danger); color: white; }
-        .btn-nuke {
-            padding: 12px 24px; font-size: 0.9rem; font-weight: 700;
-            background: transparent; color: var(--danger); border: 2px solid var(--danger);
-            font-family: var(--font-body); cursor: pointer; border-radius: 6px;
-            transition: all 0.2s; margin-top: 24px; width: 100%;
-        }
+        .btn-nuke { padding: 12px 24px; font-size: 0.9rem; font-weight: 700; background: transparent; color: var(--danger); border: 2px solid var(--danger); font-family: var(--font-body); cursor: pointer; border-radius: 6px; transition: all 0.2s; margin-top: 24px; width: 100%; }
         .btn-nuke:hover { background: var(--danger); color: white; }
         .empty-state { text-align: center; padding: 40px; color: var(--text-muted); font-style: italic; }
 
-        /* TOAST */
-        .toast {
-            position: fixed; bottom: 24px; left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--surface); border: 1px solid var(--accent-dim);
-            color: var(--text); padding: 12px 24px; border-radius: 8px;
-            font-size: 0.85rem; z-index: 999; transition: transform 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        }
+        .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--surface); border: 1px solid var(--accent-dim); color: var(--text); padding: 12px 24px; border-radius: 8px; font-size: 0.85rem; z-index: 999; transition: transform 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
         .toast.show { transform: translateX(-50%) translateY(0); }
 
-        @media (max-width: 480px) {
-            .team-header { flex-direction: column; align-items: flex-start; }
-            .admin-board { gap: 4px; }
-            .admin-tile { font-size: 0.45rem; padding: 3px 2px; }
-        }
+        @media (max-width: 480px) { .team-header { flex-direction: column; align-items: flex-start; } .admin-board { gap: 4px; } .admin-tile { font-size: 0.45rem; padding: 3px 2px; } }
     </style>
 </head>
 <body>
@@ -158,9 +88,7 @@
         <h1>Skybreakers Admin</h1>
         <div class="subtitle">⚠ Full board control — handle with care</div>
     </header>
-    <div id="teamList" class="team-list">
-        <div class="empty-state">Loading teams...</div>
-    </div>
+    <div id="teamList" class="team-list"><div class="empty-state">Loading teams...</div></div>
     <button class="btn-nuke" onclick="deleteAllTeams()">🗑 Delete ALL Teams</button>
 </div>
 <div class="toast" id="toast"></div>
@@ -178,7 +106,7 @@
         appId: "1:198647199029:web:af0be2b9884b748fe1087c"
     });
     const db = firebase.database();
-
+    const TOTAL = 25;
     const DEFAULT_TASKS = [
         "Nex Drop", "Araxxor Leg Piece", "GWD2 Unique", "Telos Orb", "Kerapac Broadcast",
         "Raksha Codex/Boots", "Croesus Cryptbloom", "Arch-Glacor Unique", "60 Fortunate Comps", "Skilling Pet",
@@ -189,215 +117,142 @@
 
     let teamsCache = {};
 
-    function shuffleArray(arr) {
-        const a = [...arr];
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
-        }
-        return a;
-    }
-
+    function shuffleArray(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
     function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
 
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.textContent = msg; t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2500);
-    }
+    db.ref('teams').on('value', snap => { teamsCache = snap.val() || {}; renderTeamList(); });
 
-    // ═══════════════════════════════════════════
-    //  REAL-TIME TEAM LIST + BOARDS
-    // ═══════════════════════════════════════════
-    db.ref('teams').on('value', snap => {
-        const teams = snap.val();
-        teamsCache = teams || {};
-        renderTeamList(teams);
-    });
-
-    function renderTeamList(teams) {
+    function renderTeamList() {
         const el = document.getElementById('teamList');
-        if (!teams) { el.innerHTML = '<div class="empty-state">No teams exist.</div>'; return; }
+        const teams = teamsCache;
+        if (!Object.keys(teams).length) { el.innerHTML = '<div class="empty-state">No teams exist.</div>'; return; }
+
+        const expanded = new Set();
+        document.querySelectorAll('.team-card.expanded').forEach(c => expanded.add(c.dataset.code));
 
         const entries = Object.entries(teams).sort((a, b) => {
-            const ca = a[1].completed ? Object.keys(a[1].completed).length : 0;
-            const cb = b[1].completed ? Object.keys(b[1].completed).length : 0;
+            const ca = a[1].chain ? a[1].chain.completed || 0 : 0;
+            const cb = b[1].chain ? b[1].chain.completed || 0 : 0;
             return cb - ca;
         });
 
-        // Remember which cards are expanded
-        const expandedCodes = new Set();
-        document.querySelectorAll('.team-card.expanded').forEach(c => expandedCodes.add(c.dataset.code));
-
         el.innerHTML = entries.map(([code, data]) => {
-            const tasks     = data.tasks     || DEFAULT_TASKS;
-            const revealed  = data.revealed  || {};
-            const completed = data.completed || {};
-            const revCount  = Object.keys(revealed).length;
-            const compCount = Object.keys(completed).length;
-            const hidden    = tasks.length - revCount - compCount;
-            const created   = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '—';
-            const isExpanded = expandedCodes.has(code);
+            const tasks = data.tasks || DEFAULT_TASKS;
+            const order = data.order || [...Array(TOTAL).keys()];
+            const chain = data.chain || { revealed: 2, completed: 0 };
+            const isExp = expanded.has(code);
+            const created = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '—';
 
-            // Build admin board tiles
-            const boardTiles = tasks.map((task, i) => {
-                const isComp = completed[i] === true;
-                const isRev  = revealed[i]  === true;
+            const boardTiles = Array.from({ length: TOTAL }, (_, boardIdx) => {
+                const ci = order[boardIdx];
                 let stateClass, label;
-                if (isComp)      { stateClass = 'state-completed'; label = '✓'; }
-                else if (isRev)  { stateClass = 'state-revealed';  label = '◉'; }
-                else             { stateClass = 'state-hidden';    label = '?'; }
-                return `<div class="admin-tile ${stateClass}" onclick="cycleTile('${code}', ${i})" title="Click to cycle: hidden → revealed → completed → hidden">
-                    ${escapeHtml(task)}
+                if (ci < chain.completed)      { stateClass = 'state-completed'; label = '✓'; }
+                else if (ci < chain.revealed)  { stateClass = 'state-revealed';  label = '◉'; }
+                else                           { stateClass = 'state-hidden';    label = '?'; }
+                const letter = String.fromCharCode(65 + ci);
+                return `<div class="admin-tile ${stateClass}" title="Chain: ${letter} (${ci})&#10;${escapeHtml(tasks[ci])}">
+                    <span class="chain-label">${letter}</span>
+                    ${escapeHtml(tasks[ci])}
                     <span class="state-label">${label}</span>
                 </div>`;
             }).join('');
 
-            return `<div class="team-card ${isExpanded ? 'expanded' : ''}" data-code="${code}">
+            return `<div class="team-card ${isExp ? 'expanded' : ''}" data-code="${code}">
                 <div class="team-header" onclick="toggleExpand(this)">
                     <div class="team-info">
                         <h3>${escapeHtml(data.name)}</h3>
                         <div class="team-meta">
                             <span class="code">${code}</span>
-                            <span>${revCount} open</span>
-                            <span>${compCount} done</span>
-                            <span>${hidden} hidden</span>
+                            <span>${chain.completed} done</span>
+                            <span>${chain.revealed - chain.completed} open</span>
+                            <span>${TOTAL - chain.revealed} hidden</span>
                             <span>Created ${created}</span>
                         </div>
-                        <div class="expand-hint">${isExpanded ? '▲ Click to collapse' : '▼ Click to expand board'}</div>
+                        <div class="expand-hint">${isExp ? '▲ Collapse' : '▼ Expand board'}</div>
                     </div>
                     <div class="team-actions" onclick="event.stopPropagation()">
-                        <button class="btn btn-reveal" onclick="revealTile('${code}')">⚔ Reveal</button>
+                        <button class="btn btn-reveal" onclick="adminReveal('${code}')">⚔ +1 Reveal</button>
                         <button class="btn btn-reset" onclick="resetTeam('${code}', '${escapeHtml(data.name)}')">Reset</button>
                         <button class="btn btn-delete" onclick="deleteTeam('${code}', '${escapeHtml(data.name)}')">Delete</button>
                     </div>
                 </div>
                 <div class="admin-board-section">
+                    <div class="chain-controls">
+                        <label>Revealed: <input type="number" min="0" max="${TOTAL}" value="${chain.revealed}" onchange="setChain('${code}', 'revealed', this.value)"></label>
+                        <label>Completed: <input type="number" min="0" max="${TOTAL}" value="${chain.completed}" onchange="setChain('${code}', 'completed', this.value)"></label>
+                    </div>
                     <div class="board-legend">
                         <span><span class="swatch swatch-hidden"></span> Hidden</span>
                         <span><span class="swatch swatch-revealed"></span> Revealed</span>
                         <span><span class="swatch swatch-completed"></span> Completed</span>
+                        <span style="margin-left: auto; font-style: italic;">Letter = chain position</span>
                     </div>
-                    <div class="cycle-hint">Click any tile to cycle: hidden → revealed → completed → hidden</div>
                     <div class="admin-board">${boardTiles}</div>
                 </div>
             </div>`;
         }).join('');
     }
 
-    // ═══════════════════════════════════════════
-    //  EXPAND / COLLAPSE
-    // ═══════════════════════════════════════════
     function toggleExpand(headerEl) {
         const card = headerEl.closest('.team-card');
         card.classList.toggle('expanded');
-        const hint = card.querySelector('.expand-hint');
-        hint.textContent = card.classList.contains('expanded') ? '▲ Click to collapse' : '▼ Click to expand board';
+        card.querySelector('.expand-hint').textContent = card.classList.contains('expanded') ? '▲ Collapse' : '▼ Expand board';
     }
 
-    // ═══════════════════════════════════════════
-    //  CYCLE TILE STATE (admin only, no chains)
-    //  hidden → revealed → completed → hidden
-    // ═══════════════════════════════════════════
-    async function cycleTile(code, index) {
+    async function setChain(code, field, value) {
+        let v = Math.max(0, Math.min(TOTAL, parseInt(value) || 0));
         const data = teamsCache[code];
         if (!data) return;
+        const chain = data.chain || { revealed: 2, completed: 0 };
 
-        const revealed  = data.revealed  || {};
-        const completed = data.completed || {};
-        const tasks     = data.tasks || DEFAULT_TASKS;
-
-        const isRev  = revealed[index]  === true;
-        const isComp = completed[index] === true;
-
-        const updates = {};
-        const now = Date.now();
-        let action, newState;
-
-        if (isComp) {
-            // completed → hidden
-            updates[`completed/${index}`] = null;
-            updates[`revealed/${index}`]  = null;
-            // Also clean up spawnedBy if it exists
-            updates[`spawnedBy/${index}`] = null;
-            action = 'admin-hide';
-            newState = 'hidden';
-        } else if (isRev) {
-            // revealed → completed
-            updates[`completed/${index}`] = true;
-            action = 'admin-complete';
-            newState = 'completed';
+        if (field === 'completed') {
+            // completed can't exceed revealed
+            if (v > chain.revealed) v = chain.revealed;
+            await db.ref(`teams/${code}/chain/completed`).set(v);
         } else {
-            // hidden → revealed
-            updates[`revealed/${index}`] = true;
-            action = 'admin-reveal';
-            newState = 'revealed';
+            // revealed can't be less than completed
+            if (v < chain.completed) v = chain.completed;
+            await db.ref(`teams/${code}/chain/revealed`).set(v);
         }
 
-        updates[`log/${now}`] = {
-            action,
-            task: tasks[index],
-            index,
-            time: new Date(now).toISOString(),
-            source: 'admin'
-        };
-
-        await db.ref(`teams/${code}`).update(updates);
-        showToast(`"${tasks[index]}" → ${newState}`);
+        const now = Date.now();
+        await db.ref(`teams/${code}/log/${now}`).set({
+            action: `admin-set-${field}`, task: `${field} → ${v}`,
+            time: new Date(now).toISOString(), source: 'admin'
+        });
+        showToast(`${field} set to ${v}`);
     }
 
-    // ═══════════════════════════════════════════
-    //  TEAM ACTIONS
-    // ═══════════════════════════════════════════
-    async function revealTile(code) {
+    async function adminReveal(code) {
         const data = teamsCache[code];
         if (!data) return;
+        const chain = data.chain || { revealed: 2, completed: 0 };
+        if (chain.revealed >= TOTAL) { showToast('All tiles already revealed.'); return; }
 
-        const revealed = data.revealed || {};
         const tasks = data.tasks || DEFAULT_TASKS;
-        const hidden = [];
-        for (let i = 0; i < tasks.length; i++) {
-            if (!revealed[i]) hidden.push(i);
-        }
-        if (hidden.length === 0) { showToast('All tiles are already revealed.'); return; }
-
-        const pick = hidden[Math.floor(Math.random() * hidden.length)];
+        const newRevealed = chain.revealed + 1;
         const now = Date.now();
-        const updates = {};
-        updates[`revealed/${pick}`] = true;
-        updates[`log/${now}`] = {
-            action: 'reveal', task: tasks[pick], index: pick,
-            time: new Date(now).toISOString(), source: 'admin'
-        };
 
-        await db.ref(`teams/${code}`).update(updates);
-        showToast(`Revealed "${tasks[pick]}"`);
+        await db.ref(`teams/${code}`).update({
+            'chain/revealed': newRevealed,
+            [`log/${now}`]: { action: 'reveal', task: tasks[chain.revealed], chainIndex: chain.revealed, time: new Date(now).toISOString(), source: 'admin' }
+        });
+        showToast(`Revealed "${tasks[chain.revealed]}"`);
     }
 
     async function resetTeam(code, name) {
         if (!confirm(`Reset "${name}"? Reshuffles tasks and clears all progress.`)) return;
         const now = Date.now();
-        const shuffled = shuffleArray(DEFAULT_TASKS);
-
-        const initialRevealed = {};
-        const initialLog = {};
-        const indices = [...Array(shuffled.length).keys()];
-        for (let r = 0; r < 2 && indices.length > 0; r++) {
-            const pick = Math.floor(Math.random() * indices.length);
-            const idx = indices.splice(pick, 1)[0];
-            initialRevealed[idx] = true;
-            initialLog[now + r] = {
-                action: 'reveal', task: shuffled[idx], index: idx,
-                time: new Date(now + r).toISOString(), source: 'initial'
-            };
+        const tasks = shuffleArray(DEFAULT_TASKS);
+        const order = shuffleArray([...Array(TOTAL).keys()]);
+        const log = {};
+        for (let i = 0; i < 2; i++) {
+            log[now + i] = { action: 'reveal', task: tasks[i], chainIndex: i, time: new Date(now + i).toISOString(), source: 'initial' };
         }
-
         await db.ref(`teams/${code}`).update({
-            tasks: shuffled,
-            revealed: initialRevealed,
-            completed: null,
-            spawnedBy: null,
-            log: initialLog,
+            tasks, order, chain: { revealed: 2, completed: 0 },
+            log, spawnedBy: null, revealed: null, completed: null,
             lastAutoReveal: now
         });
         showToast(`"${name}" has been reset.`);
@@ -410,8 +265,8 @@
     }
 
     async function deleteAllTeams() {
-        if (!confirm('DELETE ALL TEAMS? Removes everything. Cannot be undone.')) return;
-        if (!confirm('Are you really sure? Last chance.')) return;
+        if (!confirm('DELETE ALL TEAMS? Cannot be undone.')) return;
+        if (!confirm('Really sure? Last chance.')) return;
         await db.ref('teams').remove();
         showToast('All teams deleted.');
     }
