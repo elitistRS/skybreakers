@@ -740,4 +740,22 @@
         toggle.classList.toggle('open', !isOpen);
     }
 
-    function copyJoinCode
+    function copyJoinCode    function copyJoinCode() { navigator.clipboard.writeText(currentCode).then(() => showToast('Join code copied!')); }
+    function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+
+    // ═══════════════════════════════════════════
+    //  BOOT
+    // ═══════════════════════════════════════════
+    initLeaderboard();
+    initFreeTasks();
+    const saved = localStorage.getItem('rs3bingo_team');
+    if (saved) {
+        db.ref(`teams/${saved}`).once('value').then(snap => {
+            if (snap.exists()) enterBoard(saved);
+            else { localStorage.removeItem('rs3bingo_team'); showScreen('lobby'); }
+        });
+    } else { showScreen('lobby'); }
+</script>
+</body>
+</html>
