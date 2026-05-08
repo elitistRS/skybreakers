@@ -80,78 +80,69 @@
 
         @media (max-width: 480px) { .team-header { flex-direction: column; align-items: flex-start; } .admin-board { gap: 4px; } .admin-tile { font-size: 0.45rem; padding: 3px 2px; } }
 
-        /* FREE TASKS SECTION */
-        .section { background: var(--surface); border: 1px solid var(--tile-border); border-radius: 10px; padding: 20px; margin-bottom: 28px; }
-        .section h2 { font-family: var(--font-display); font-size: 1rem; color: var(--accent); margin-bottom: 4px; letter-spacing: 0.06em; }
-        .section-sub { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 16px; }
-        .free-task-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-        .free-task-row { display: flex; align-items: center; gap: 8px; }
-        .free-task-row input { flex: 1; padding: 9px 12px; background: var(--tile-bg); border: 1px solid var(--tile-border); border-radius: 5px; color: var(--text); font-family: var(--font-body); font-size: 0.88rem; outline: none; transition: border-color 0.2s; }
-        .free-task-row input:focus { border-color: var(--accent-dim); }
-        .free-task-row .btn-del { background: transparent; color: var(--danger); border: 1px solid rgba(192,57,43,0.35); border-radius: 5px; padding: 7px 11px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
-        .free-task-row .btn-del:hover { background: var(--danger); color: white; border-color: var(--danger); }
-        .free-add-row { display: flex; gap: 8px; margin-bottom: 14px; }
-        .free-add-row input { flex: 1; padding: 9px 12px; background: var(--tile-bg); border: 1px solid var(--tile-border); border-radius: 5px; color: var(--text); font-family: var(--font-body); font-size: 0.88rem; outline: none; transition: border-color 0.2s; }
-        .free-add-row input:focus { border-color: var(--accent-dim); }
-        .free-add-row .btn-add { padding: 9px 18px; font-size: 0.88rem; font-weight: 600; background: transparent; color: var(--accent); border: 1px solid var(--accent-dim); border-radius: 5px; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
-        .free-add-row .btn-add:hover { background: var(--accent); color: var(--bg); }
-        .btn-save { width: 100%; padding: 10px; font-size: 0.9rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-dim)); color: #0a0a0f; border: none; border-radius: 6px; cursor: pointer; font-family: var(--font-body); transition: opacity 0.2s; }
-        .btn-save:hover { opacity: 0.88; }
+        /* ── AUTH ── */
+        #loginScreen { position:fixed; inset:0; background:var(--bg); z-index:200; display:flex; align-items:center; justify-content:center; padding:24px; }
+        .login-box { background:var(--surface); border:1px solid var(--tile-border); border-radius:12px; padding:36px 32px; width:100%; max-width:360px; text-align:center; }
+        .login-box h2 { font-family:var(--font-display); font-size:1.3rem; color:var(--accent); margin-bottom:6px; letter-spacing:0.06em; }
+        .login-box p { font-size:0.78rem; color:var(--text-muted); margin-bottom:24px; }
+        .login-box input { display:block; width:100%; padding:11px 14px; margin-bottom:10px; background:var(--tile-bg); border:1px solid var(--tile-border); border-radius:6px; color:var(--text); font-family:var(--font-body); font-size:0.9rem; outline:none; transition:border-color .2s; }
+        .login-box input:focus { border-color:var(--accent-dim); }
+        .login-box .btn-login { width:100%; padding:11px; font-size:0.95rem; font-weight:700; background:linear-gradient(135deg,var(--accent),var(--accent-dim)); color:#0a0a0f; border:none; border-radius:6px; cursor:pointer; font-family:var(--font-body); margin-top:4px; transition:opacity .2s; }
+        .login-box .btn-login:hover { opacity:.88; }
+        .login-error { color:var(--danger); font-size:0.8rem; margin-top:10px; min-height:18px; }
+        .logout-btn { position:fixed; top:14px; right:16px; z-index:50; background:transparent; border:1px solid var(--tile-border); color:var(--text-muted); font-family:var(--font-body); font-size:0.75rem; padding:5px 12px; border-radius:5px; cursor:pointer; transition:all .2s; }
+        .logout-btn:hover { border-color:var(--danger); color:var(--danger); }
 
-        /* LOGIN SCREEN */
-        #loginScreen {
-            position: fixed; inset: 0; background: var(--bg); z-index: 100;
-            display: flex; align-items: center; justify-content: center; padding: 24px;
-        }
-        .login-box {
-            background: var(--surface); border: 1px solid var(--tile-border);
-            border-radius: 12px; padding: 36px 32px; width: 100%; max-width: 360px;
-            text-align: center;
-        }
-        .login-box h2 { font-family: var(--font-display); font-size: 1.3rem; color: var(--accent); margin-bottom: 6px; letter-spacing: 0.06em; }
-        .login-box p { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 24px; }
-        .login-box input {
-            width: 100%; padding: 11px 14px; margin-bottom: 10px;
-            background: var(--tile-bg); border: 1px solid var(--tile-border);
-            border-radius: 6px; color: var(--text); font-family: var(--font-body);
-            font-size: 0.9rem; outline: none; transition: border-color 0.2s;
-        }
-        .login-box input:focus { border-color: var(--accent-dim); }
-        .login-box .btn-login {
-            width: 100%; padding: 11px; font-size: 0.95rem; font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), var(--accent-dim));
-            color: #0a0a0f; border: none; border-radius: 6px; cursor: pointer;
-            font-family: var(--font-body); margin-top: 4px; transition: opacity 0.2s;
-        }
-        .login-box .btn-login:hover { opacity: 0.88; }
-        .login-error { color: var(--danger); font-size: 0.8rem; margin-top: 10px; min-height: 18px; }
-        .logout-btn {
-            position: fixed; top: 14px; right: 16px; z-index: 50;
-            background: transparent; border: 1px solid var(--tile-border);
-            color: var(--text-muted); font-family: var(--font-body); font-size: 0.75rem;
-            padding: 5px 12px; border-radius: 5px; cursor: pointer; transition: all 0.2s;
-        }
-        .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+        /* ── FREE TASKS ── */
+        .section { background:var(--surface); border:1px solid var(--tile-border); border-radius:10px; padding:20px; margin-bottom:28px; }
+        .section h2 { font-family:var(--font-display); font-size:1rem; color:var(--accent); margin-bottom:4px; letter-spacing:0.06em; }
+        .section-sub { font-size:0.78rem; color:var(--text-muted); margin-bottom:16px; }
+        .free-task-list { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+        .free-task-row { display:flex; align-items:center; gap:8px; }
+        .free-task-row input { flex:1; padding:9px 12px; background:var(--tile-bg); border:1px solid var(--tile-border); border-radius:5px; color:var(--text); font-family:var(--font-body); font-size:0.88rem; outline:none; transition:border-color .2s; }
+        .free-task-row input:focus { border-color:var(--accent-dim); }
+        .free-task-row .btn-del { background:transparent; color:var(--danger); border:1px solid rgba(192,57,43,.35); border-radius:5px; padding:7px 11px; font-size:0.8rem; cursor:pointer; transition:all .2s; flex-shrink:0; }
+        .free-task-row .btn-del:hover { background:var(--danger); color:white; border-color:var(--danger); }
+        .free-add-row { display:flex; gap:8px; margin-bottom:14px; }
+        .free-add-row input { flex:1; padding:9px 12px; background:var(--tile-bg); border:1px solid var(--tile-border); border-radius:5px; color:var(--text); font-family:var(--font-body); font-size:0.88rem; outline:none; transition:border-color .2s; }
+        .free-add-row input:focus { border-color:var(--accent-dim); }
+        .free-add-row .btn-add { padding:9px 18px; font-size:0.88rem; font-weight:600; background:transparent; color:var(--accent); border:1px solid var(--accent-dim); border-radius:5px; cursor:pointer; white-space:nowrap; transition:all .2s; }
+        .free-add-row .btn-add:hover { background:var(--accent); color:var(--bg); }
+        .btn-save-free { width:100%; padding:10px; font-size:0.9rem; font-weight:700; background:linear-gradient(135deg,var(--accent),var(--accent-dim)); color:#0a0a0f; border:none; border-radius:6px; cursor:pointer; font-family:var(--font-body); transition:opacity .2s; }
+        .btn-save-free:hover { opacity:.88; }
     </style>
 </head>
 <body>
+<!-- Login overlay -->
+<div id="loginScreen" style="position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px">
+    <div class="login-box">
+        <h2>⚔ Admin Panel</h2>
+        <p>Skybreakers Bingo — Restricted Access</p>
+        <input type="email" id="loginEmail" placeholder="Email address" onkeydown="if(event.key==='Enter')document.getElementById('loginPw').focus()">
+        <input type="password" id="loginPw" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="btn-login" onclick="doLogin()">Sign In</button>
+        <div class="login-error" id="loginError"></div>
+    </div>
+</div>
+<button id="logoutBtn" class="logout-btn" style="display:none" onclick="doLogout()">Sign out</button>
+
 <div class="container">
     <a href="index.html" class="back-link">← Back to Bingo</a>
     <header class="header">
         <h1>Skybreakers Admin</h1>
         <div class="subtitle">⚠ Full board control — handle with care</div>
     </header>
-
-    <!-- FREE TASKS SECTION -->
+    <!-- Free Tasks -->
     <div class="section">
         <h2>⭐ Free Tasks</h2>
-        <p class="section-sub">These tasks are always visible to every team. Changes apply globally and immediately on save.</p>
+        <p class="section-sub">Always visible to every team. Changes apply globally on save.</p>
         <div class="free-task-list" id="freeTaskList"></div>
         <div class="free-add-row">
-            <input type="text" id="freeNewInput" placeholder="New free task..." maxlength="80" onkeydown="if(event.key==='Enter')freeAdd()">
+            <input type="text" id="freeNewInput" placeholder="New free task..." maxlength="80"
+                   onkeydown="if(event.key==='Enter')freeAdd()">
             <button class="btn-add" onclick="freeAdd()">+ Add</button>
         </div>
-        <button class="btn-save" onclick="freeSave()">💾 Save Free Tasks</button>
+        <button class="btn-save-free" onclick="freeSave()">💾 Save Free Tasks</button>
     </div>
 
     <div id="teamList" class="team-list"><div class="empty-state">Loading teams...</div></div>
@@ -176,18 +167,17 @@
 
     const auth = firebase.auth();
 
-    // Hide everything until auth state is known
+    // Hide main content until auth resolves
     document.querySelector('.container').style.visibility = 'hidden';
 
     auth.onAuthStateChanged(user => {
         if (user) {
             document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('logoutBtn').classList.remove('hidden');
+            document.getElementById('logoutBtn').style.display = 'block';
             document.querySelector('.container').style.visibility = 'visible';
-            initAdmin();
         } else {
             document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('logoutBtn').classList.add('hidden');
+            document.getElementById('logoutBtn').style.display = 'none';
             document.querySelector('.container').style.visibility = 'hidden';
         }
     });
@@ -195,19 +185,66 @@
     function doLogin() {
         const email = document.getElementById('loginEmail').value.trim();
         const pw    = document.getElementById('loginPw').value;
-        const errEl = document.getElementById('loginError');
-        errEl.textContent = '';
+        document.getElementById('loginError').textContent = '';
         auth.signInWithEmailAndPassword(email, pw)
-            .catch(err => {
-                errEl.textContent = 'Incorrect email or password.';
-            });
+            .catch(() => { document.getElementById('loginError').textContent = 'Incorrect email or password.'; });
     }
 
-    function doLogout() {
-        auth.signOut();
+    function doLogout() { auth.signOut(); }
+
+    // ── FREE TASKS ────────────────────────────────────
+    const DEFAULT_FREE_TASKS = [
+        "Claim a quest cape",
+        "Reach max total level",
+        "Complete a 5-star Elite Dungeon"
+    ];
+    let freeDraft = [];
+
+    db.ref('config/freeTasks').once('value').then(snap => {
+        freeDraft = snap.val() || DEFAULT_FREE_TASKS;
+        if (!snap.exists()) db.ref('config/freeTasks').set(DEFAULT_FREE_TASKS);
+        renderFreeList();
+    });
+
+    function renderFreeList() {
+        const list = document.getElementById('freeTaskList');
+        if (!list) return;
+        if (!freeDraft.length) {
+            list.innerHTML = '<div style="color:var(--text-muted);font-size:0.82rem;font-style:italic;padding:4px 0">No free tasks yet.</div>';
+            return;
+        }
+        list.innerHTML = freeDraft.map((task, i) =>
+            `<div class="free-task-row">
+                <input type="text" value="${escapeHtml(task)}" oninput="freeDraft[${i}]=this.value" placeholder="Task name...">
+                <button class="btn-del" onclick="freeRemove(${i})" title="Remove">✕</button>
+            </div>`
+        ).join('');
     }
 
-    function initAdmin() {
+    function freeAdd() {
+        const inp = document.getElementById('freeNewInput');
+        const val = inp.value.trim();
+        if (!val) return;
+        freeDraft.push(val);
+        inp.value = '';
+        renderFreeList();
+        const rows = document.querySelectorAll('#freeTaskList .free-task-row input');
+        if (rows.length) rows[rows.length - 1].focus();
+    }
+
+    function freeRemove(i) { freeDraft.splice(i, 1); renderFreeList(); }
+
+    async function freeSave() {
+        document.querySelectorAll('#freeTaskList .free-task-row input').forEach((inp, i) => {
+            if (i < freeDraft.length) freeDraft[i] = inp.value.trim();
+        });
+        const cleaned = freeDraft.filter(t => t.length > 0);
+        await db.ref('config/freeTasks').set(cleaned);
+        freeDraft = cleaned;
+        renderFreeList();
+        showToast('✅ Free tasks saved!');
+    }
+
     const TOTAL = 25;
     const DEFAULT_TASKS = [
         "Nex Drop", "Araxxor Leg Piece", "GWD2 Unique", "Telos Orb", "Kerapac Broadcast",
@@ -372,67 +409,6 @@
         await db.ref('teams').remove();
         showToast('All teams deleted.');
     }
-    // ═══════════════════════════════════════════
-    //  FREE TASKS
-    // ═══════════════════════════════════════════
-    const DEFAULT_FREE_TASKS = [
-        "Claim a quest cape",
-        "Reach max total level",
-        "Complete a 5-star Elite Dungeon"
-    ];
-
-    let freeDraft = [];
-
-    // Load from Firebase on init
-    db.ref('config/freeTasks').once('value').then(snap => {
-        freeDraft = snap.val() || DEFAULT_FREE_TASKS;
-        renderFreeList();
-    });
-
-    function renderFreeList() {
-        const list = document.getElementById('freeTaskList');
-        if (!freeDraft.length) {
-            list.innerHTML = '<div style="color:var(--text-muted);font-size:0.82rem;font-style:italic;padding:4px 0;">No free tasks yet.</div>';
-            return;
-        }
-        list.innerHTML = freeDraft.map((task, i) =>
-            `<div class="free-task-row">
-                <input type="text" value="${escapeHtml(task)}" oninput="freeDraft[${i}]=this.value" placeholder="Task name...">
-                <button class="btn-del" onclick="freeRemove(${i})" title="Remove">✕</button>
-            </div>`
-        ).join('');
-    }
-
-    function freeAdd() {
-        const input = document.getElementById('freeNewInput');
-        const val = input.value.trim();
-        if (!val) return;
-        freeDraft.push(val);
-        input.value = '';
-        renderFreeList();
-        // Focus the last added input
-        const rows = document.querySelectorAll('#freeTaskList .free-task-row input');
-        if (rows.length) rows[rows.length - 1].focus();
-    }
-
-    function freeRemove(i) {
-        freeDraft.splice(i, 1);
-        renderFreeList();
-    }
-
-    async function freeSave() {
-        // Sync any inline edits from inputs before saving
-        document.querySelectorAll('#freeTaskList .free-task-row input').forEach((inp, i) => {
-            if (i < freeDraft.length) freeDraft[i] = inp.value.trim();
-        });
-        const cleaned = freeDraft.filter(t => t.length > 0);
-        await db.ref('config/freeTasks').set(cleaned);
-        freeDraft = cleaned;
-        renderFreeList();
-        showToast('✅ Free tasks saved!');
-    }
-
-    } // end initAdmin
 </script>
 </body>
 </html>
