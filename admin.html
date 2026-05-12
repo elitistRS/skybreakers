@@ -56,11 +56,14 @@
             aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center;
             justify-content: center; text-align: center; font-size: clamp(0.5rem, 1.6vw, 0.72rem);
             font-weight: 600; padding: 4px 3px; position: relative;
-            transition: all 0.2s; line-height: 1.25; user-select: none;
+            transition: all 0.2s; line-height: 1.25; user-select: none; cursor: pointer;
         }
         .admin-tile.state-hidden { background: var(--tile-bg); border: 1px solid var(--tile-border); color: var(--text-muted); }
+        .admin-tile.state-hidden:hover { border-color: var(--accent-dim); background: rgba(184,145,46,0.08); }
         .admin-tile.state-revealed { background: rgba(184,145,46,0.15); border: 1px solid var(--accent-dim); color: var(--accent); }
+        .admin-tile.state-revealed:hover { background: rgba(39,174,96,0.15); border-color: var(--success); }
         .admin-tile.state-completed { background: rgba(39,174,96,0.15); border: 1px solid var(--success); color: var(--success); }
+        .admin-tile.state-completed:hover { background: rgba(184,145,46,0.15); border-color: var(--accent-dim); }
         .admin-tile .chain-label { position: absolute; top: 2px; left: 3px; font-size: 0.45rem; opacity: 0.5; font-family: monospace; }
         .admin-tile .state-label { position: absolute; bottom: 2px; right: 3px; font-size: 0.5rem; opacity: 0.5; }
 
@@ -283,14 +286,17 @@
             const isExp = expanded.has(code);
             const created = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '—';
 
+            const completedIndices = data.completedIndices || [];
+            const completedSet = new Set(completedIndices);
+
             const boardTiles = Array.from({ length: TOTAL }, (_, boardIdx) => {
                 const ci = order[boardIdx];
                 let stateClass, label;
-                if (ci < chain.completed)      { stateClass = 'state-completed'; label = '✓'; }
-                else if (ci < chain.revealed)  { stateClass = 'state-revealed';  label = '◉'; }
-                else                           { stateClass = 'state-hidden';    label = '?'; }
+                if (completedSet.has(ci))       { stateClass = 'state-completed'; label = '✓'; }
+                else if (ci < chain.revealed)   { stateClass = 'state-revealed';  label = '◉'; }
+                else                            { stateClass = 'state-hidden';    label = '?'; }
                 const letter = String.fromCharCode(65 + ci);
-                return `<div class="admin-tile ${stateClass}" title="Chain: ${letter} (${ci})&#10;${escapeHtml(tasks[ci])}">
+                return `<div class="admin-tile ${stateClass}" title="Chain: ${letter} (${ci})&#10;${escapeHtml(tasks[ci])}&#10;Click to cycle state" onclick="cycleTileState('${code}', ${ci})">
                     <span class="chain-label">${letter}</span>
                     ${escapeHtml(tasks[ci])}
                     <span class="state-label">${label}</span>
@@ -303,8 +309,8 @@
                         <h3>${escapeHtml(data.name)}</h3>
                         <div class="team-meta">
                             <span class="code">${code}</span>
-                            <span>${chain.completed} done</span>
-                            <span>${chain.revealed - chain.completed} open</span>
+                            <span>${completedSet.size} done</span>
+                            <span>${chain.revealed - completedSet.size} open</span>
                             <span>${TOTAL - chain.revealed} hidden</span>
                             <span>Created ${created}</span>
                         </div>
@@ -325,7 +331,7 @@
                         <span><span class="swatch swatch-hidden"></span> Hidden</span>
                         <span><span class="swatch swatch-revealed"></span> Revealed</span>
                         <span><span class="swatch swatch-completed"></span> Completed</span>
-                        <span style="margin-left: auto; font-style: italic;">Letter = chain position</span>
+                        <span style="margin-left: auto; font-style: italic;">Click tile to cycle state</span>
                     </div>
                     <div class="admin-board">${boardTiles}</div>
                 </div>
@@ -339,6 +345,42 @@
         card.querySelector('.expand-hint').textContent = card.classList.contains('expanded') ? '▲ Collapse' : '▼ Expand board';
     }
 
+    async function cycleTileState(code, chainIdx) {
+        const data = teamsCache[code];
+        if (!data) return;
+        const chain = data.chain || { revealed: 2, completed: 0 };
+        const completedIndices = data.completedIndices || [];
+        const completedSet = new Set(completedIndices);
+        const tasks = data.tasks || DEFAULT_TASKS;
+        const now = Date.now();
+        const updates = {};
+
+        if (completedSet.has(chainIdx)) {
+            // COMPLETED → REVEALED (uncomplete it)
+            const newCompleted = completedIndices.filter(i => i !== chainIdx);
+            updates['completedIndices'] = newCompleted;
+            updates['chain/completed'] = newCompleted.length;
+            updates[`log/${now}`] = { action: 'uncomplete', task: tasks[chainIdx], chainIndex: chainIdx, time: new Date(now).toISOString(), source: 'admin' };
+        } else if (chainIdx < chain.revealed) {
+            // REVEALED → COMPLETED
+            const newCompleted = [...completedIndices, chainIdx];
+            updates['completedIndices'] = newCompleted;
+            updates['chain/completed'] = newCompleted.length;
+            updates[`log/${now}`] = { action: 'complete', task: tasks[chainIdx], chainIndex: chainIdx, time: new Date(now).toISOString(), source: 'admin' };
+        } else {
+            // HIDDEN → REVEALED (bump revealed to include this tile)
+            const newRevealed = chainIdx + 1;
+            updates['chain/revealed'] = newRevealed;
+            // Log reveals for all newly revealed tiles
+            for (let i = chain.revealed; i <= chainIdx; i++) {
+                updates[`log/${now + i}`] = { action: 'reveal', task: tasks[i], chainIndex: i, time: new Date(now + i).toISOString(), source: 'admin' };
+            }
+        }
+
+        await db.ref(`teams/${code}`).update(updates);
+        showToast(`Tile "${tasks[chainIdx]}" updated`);
+    }
+
     async function setChain(code, field, value) {
         let v = Math.max(0, Math.min(TOTAL, parseInt(value) || 0));
         const data = teamsCache[code];
@@ -348,10 +390,16 @@
         if (field === 'completed') {
             // completed can't exceed revealed
             if (v > chain.revealed) v = chain.revealed;
-            await db.ref(`teams/${code}/chain/completed`).set(v);
+            // Rebuild completedIndices to match: mark chain indices 0..v-1 as completed
+            const newCompleted = Array.from({ length: v }, (_, i) => i);
+            await db.ref(`teams/${code}`).update({
+                'chain/completed': v,
+                'completedIndices': newCompleted
+            });
         } else {
             // revealed can't be less than completed
-            if (v < chain.completed) v = chain.completed;
+            const currentCompleted = (data.completedIndices || []).length;
+            if (v < currentCompleted) v = currentCompleted;
             await db.ref(`teams/${code}/chain/revealed`).set(v);
         }
 
@@ -381,7 +429,11 @@
     }
 
     async function resetTeam(code, name) {
-        if (!confirm(`Reset "${name}"? Reshuffles tasks and clears all progress.`)) return;
+        if (!confirm(`Reset "${name}"? Reshuffles tasks and clears ALL progress.`)) return;
+        const data = teamsCache[code];
+        const teamName = data ? data.name : name;
+        const createdAt = data ? data.createdAt : Date.now();
+
         const now = Date.now();
         const tasks = shuffleArray(DEFAULT_TASKS);
         const order = shuffleArray([...Array(TOTAL).keys()]);
@@ -389,12 +441,20 @@
         for (let i = 0; i < 2; i++) {
             log[now + i] = { action: 'reveal', task: tasks[i], chainIndex: i, time: new Date(now + i).toISOString(), source: 'initial' };
         }
-        await db.ref(`teams/${code}`).update({
-            tasks, order, chain: { revealed: 2, completed: 0 },
-            log, spawnedBy: null, revealed: null, completed: null,
+
+        // Overwrite the entire team node to wipe all stale fields
+        await db.ref(`teams/${code}`).set({
+            name: teamName,
+            createdAt: createdAt,
+            tasks: tasks,
+            order: order,
+            chain: { revealed: 2, completed: 0 },
+            completedIndices: [],
+            freeCompleted: {},
+            log: log,
             lastAutoReveal: now
         });
-        showToast(`"${name}" has been reset.`);
+        showToast(`"${name}" has been fully reset.`);
     }
 
     async function deleteTeam(code, name) {
