@@ -154,6 +154,7 @@
             .tile { font-size: 0.5rem; padding: 4px 2px; }
             .team-bar { flex-direction: column; text-align: center; }
             .lb-team { grid-template-columns: 28px 1fr 70px 50px; gap: 6px; padding: 8px; }
+            .free-row-body { --free-cols: 2 !important; }
         }
 
         .hidden { display: none !important; }
@@ -172,7 +173,7 @@
         .free-row-title { font-family: var(--font-display); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.08em; }
         .free-row-toggle { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.25s; }
         .free-row-toggle.open { transform: rotate(180deg); }
-        .free-row-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; padding: 12px; }
+        .free-row-body { display: grid; grid-template-columns: repeat(var(--free-cols, 5), 1fr); gap: 8px; padding: 12px; }
         .free-tile {
             background: rgba(240,192,64,0.07); border: 1px solid var(--accent-dim);
             border-radius: 6px; padding: 10px 12px; font-size: 0.78rem; font-weight: 600;
@@ -703,6 +704,16 @@
         const body = document.getElementById('freeRowBody');
         if (!body) return;
         const completedMap = teamData?.freeCompleted || {};
+
+        // Smart column count: max 5 per row, distribute evenly
+        const n = freeTasks.length;
+        const MAX_COLS = 5;
+        if (n > 0) {
+            const rows = Math.ceil(n / MAX_COLS);
+            const cols = Math.ceil(n / rows);
+            body.style.setProperty('--free-cols', cols);
+        }
+
         body.innerHTML = freeTasks.map((task, i) => {
             const done = !!completedMap[btoa(task)];
             return `<div class="free-tile ${done ? 'free-completed' : ''}" onclick="toggleFreeTask(${i})">
