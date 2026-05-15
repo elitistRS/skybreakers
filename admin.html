@@ -140,9 +140,26 @@
         .add-team-form { display:flex; flex-direction:column; gap:10px; }
         .add-team-form input { padding:10px 14px; background:var(--tile-bg); border:1px solid var(--tile-border); border-radius:6px; color:var(--text); font-family:var(--font-body); font-size:0.9rem; outline:none; transition:border-color .2s; }
         .add-team-form input:focus { border-color:var(--accent-dim); }
+        .add-team-form textarea:focus { border-color:var(--accent-dim); }
+        .add-team-form code { font-size:0.72rem; background:var(--tile-bg); padding:1px 5px; border-radius:3px; color:var(--purple); }
         .add-team-form .hint { font-size:0.72rem; color:var(--text-muted); line-height:1.4; margin-top:-4px; }
         .btn-add-team { width:100%; padding:10px; font-size:0.9rem; font-weight:700; background:linear-gradient(135deg,var(--accent),var(--accent-dim)); color:#0a0a0f; border:none; border-radius:6px; cursor:pointer; font-family:var(--font-body); transition:opacity .2s; }
         .btn-add-team:hover { opacity:.88; }
+
+        /* ── COLLAPSIBLE WORD LIST ── */
+        .sw-expand-header { display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; padding:8px 0; margin-bottom:4px; }
+        .sw-expand-header:hover .sw-expand-label { color:var(--purple); }
+        .sw-expand-label { font-size:0.8rem; color:var(--text-muted); transition:color .2s; }
+        .sw-expand-count { font-size:0.72rem; color:var(--text-muted); background:var(--tile-bg); padding:1px 8px; border-radius:10px; font-variant-numeric:tabular-nums; }
+        .sw-expand-arrow { font-size:0.65rem; color:var(--text-muted); transition:transform .25s; margin-left:auto; }
+        .sw-expand-arrow.open { transform:rotate(180deg); }
+        .sw-collapsible { overflow:hidden; max-height:0; opacity:0; transition:max-height .35s ease, opacity .25s ease; }
+        .sw-collapsible.open { max-height:1200px; opacity:1; }
+
+        /* ── BOARD DATA COPY ── */
+        .board-data-row { margin-top:10px; padding-top:10px; border-top:1px solid var(--tile-border); }
+        .btn-copy-data { width:100%; padding:8px; font-size:0.78rem; font-weight:600; background:transparent; color:var(--text-muted); border:1px solid var(--tile-border); border-radius:5px; cursor:pointer; font-family:var(--font-body); transition:all .2s; }
+        .btn-copy-data:hover { border-color:var(--purple-dim); color:var(--purple); background:rgba(140,120,220,0.06); }
     </style>
 </head>
 <body>
@@ -174,14 +191,23 @@
             <span class="sw-current-label">Current:</span>
             <span class="sw-current-word" id="swCurrentWord"></span>
         </div>
-        <div class="sw-word-list" id="swWordList"></div>
-        <div class="free-add-row">
-            <input type="text" id="swNewInput" placeholder="Add a word to the pool..." maxlength="60"
-                   onkeydown="if(event.key==='Enter')swAddWord()">
-            <button class="btn-add" onclick="swAddWord()">+ Add</button>
+        <div class="sw-expand-header" onclick="swToggleList()">
+            <span class="sw-expand-label">Word pool</span>
+            <span class="sw-expand-count" id="swWordCount">0 words</span>
+            <span class="sw-expand-arrow" id="swExpandArrow">▼</span>
+        </div>
+        <div class="sw-collapsible" id="swCollapsible">
+            <div class="sw-word-list" id="swWordList"></div>
+            <div class="free-add-row">
+                <input type="text" id="swNewInput" placeholder="Add a word to the pool..." maxlength="60"
+                       onkeydown="if(event.key==='Enter')swAddWord()">
+                <button class="btn-add" onclick="swAddWord()">+ Add</button>
+            </div>
+            <div style="margin-bottom:8px;">
+                <button class="btn-save-free" onclick="swSaveList()">💾 Save Word List</button>
+            </div>
         </div>
         <div class="sw-btn-row">
-            <button class="btn-save-free" onclick="swSaveList()">💾 Save Word List</button>
             <button class="btn-cycle" onclick="swCycle()">🔮 Cycle Word</button>
             <button class="btn-clear-word" onclick="swClear()" title="Remove the displayed word">✕</button>
         </div>
@@ -203,12 +229,20 @@
     <!-- Add Team -->
     <div class="section">
         <h2>➕ Add Team</h2>
-        <p class="section-sub">Create a new team from the admin panel with an optional fixed seed.</p>
+        <p class="section-sub">Create a new team. Use a seed for a fresh shuffle, or paste board data JSON to clone an exact board.</p>
         <div class="add-team-form">
             <input type="text" id="addTeamName" placeholder="Team name..." maxlength="30">
             <input type="text" id="addTeamCode" placeholder="Join code (e.g. skybreak24)..." maxlength="30">
             <input type="number" id="addTeamSeed" placeholder="Seed (optional — leave blank for random)">
             <p class="hint">The seed controls the task shuffle and board layout. Same seed = same board. Leave blank for a random seed.</p>
+            <div class="sw-expand-header" onclick="toggleBoardDataPaste()">
+                <span class="sw-expand-label">Or paste board data JSON</span>
+                <span class="sw-expand-arrow" id="bdPasteArrow">▼</span>
+            </div>
+            <div class="sw-collapsible" id="bdPasteCollapsible">
+                <textarea id="addTeamBoardData" rows="5" placeholder='Paste JSON from "Copy board data"...' style="width:100%;padding:10px 12px;background:var(--tile-bg);border:1px solid var(--tile-border);border-radius:6px;color:var(--text);font-family:monospace;font-size:0.78rem;resize:vertical;outline:none;margin-bottom:4px;"></textarea>
+                <p class="hint" style="margin-bottom:8px;">If valid JSON with <code>tasks</code> and <code>order</code> arrays is pasted here, the seed field is ignored and this exact board is used instead.</p>
+            </div>
             <button class="btn-add-team" onclick="adminAddTeam()">Create Team</button>
         </div>
     </div>
@@ -321,6 +355,8 @@
 
     function renderSwList() {
         const list = document.getElementById('swWordList');
+        const countEl = document.getElementById('swWordCount');
+        countEl.textContent = `${swDraft.length} word${swDraft.length !== 1 ? 's' : ''}`;
         if (!swDraft.length) {
             list.innerHTML = '<div style="color:var(--text-muted);font-size:0.82rem;font-style:italic;padding:4px 0">No words in the pool yet.</div>';
             return;
@@ -331,6 +367,14 @@
                 <button class="btn-del" onclick="swRemoveWord(${i})" title="Remove">✕</button>
             </div>`
         ).join('');
+    }
+
+    function swToggleList() {
+        const body = document.getElementById('swCollapsible');
+        const arrow = document.getElementById('swExpandArrow');
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open', !isOpen);
+        arrow.classList.toggle('open', !isOpen);
     }
 
     function swAddWord() {
@@ -442,10 +486,19 @@
     // ═══════════════════════════════════════════
     //  ADD TEAM (ADMIN)
     // ═══════════════════════════════════════════
+    function toggleBoardDataPaste() {
+        const body = document.getElementById('bdPasteCollapsible');
+        const arrow = document.getElementById('bdPasteArrow');
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open', !isOpen);
+        arrow.classList.toggle('open', !isOpen);
+    }
+
     async function adminAddTeam() {
         const name = document.getElementById('addTeamName').value.trim();
         const code = document.getElementById('addTeamCode').value.trim();
         const seedInput = document.getElementById('addTeamSeed').value.trim();
+        const boardDataRaw = document.getElementById('addTeamBoardData').value.trim();
 
         if (!name) { showToast('Enter a team name.'); return; }
         if (!code) { showToast('Enter a join code.'); return; }
@@ -454,21 +507,39 @@
         const existing = await db.ref(`teams/${code}`).once('value');
         if (existing.exists()) { showToast('That code is already taken.'); return; }
 
-        const seed = seedInput ? parseInt(seedInput) : Math.floor(Math.random() * 2147483647);
-        if (isNaN(seed)) { showToast('Seed must be a number.'); return; }
+        let tasks, order, seed;
 
-        const tasks = seededShuffle(DEFAULT_TASKS, seed);
-        const order = seededShuffle([...Array(TOTAL).keys()], seed + 1);
+        // If board data JSON is pasted, use that instead of seed
+        if (boardDataRaw) {
+            try {
+                const parsed = JSON.parse(boardDataRaw);
+                if (!Array.isArray(parsed.tasks) || parsed.tasks.length !== TOTAL) {
+                    showToast(`Board data must have a "tasks" array of ${TOTAL} items.`); return;
+                }
+                if (!Array.isArray(parsed.order) || parsed.order.length !== TOTAL) {
+                    showToast(`Board data must have an "order" array of ${TOTAL} items.`); return;
+                }
+                tasks = parsed.tasks;
+                order = parsed.order;
+                seed = parsed.seed ?? null;
+            } catch (e) {
+                showToast('Invalid JSON in board data field.'); return;
+            }
+        } else {
+            seed = seedInput ? parseInt(seedInput) : Math.floor(Math.random() * 2147483647);
+            if (isNaN(seed)) { showToast('Seed must be a number.'); return; }
+            tasks = seededShuffle(DEFAULT_TASKS, seed);
+            order = seededShuffle([...Array(TOTAL).keys()], seed + 1);
+        }
+
         const now = Date.now();
-
         const log = {};
         for (let i = 0; i < 2; i++) {
             log[now + i] = { action: 'reveal', task: tasks[i], chainIndex: i, time: new Date(now + i).toISOString(), source: 'initial' };
         }
 
-        await db.ref(`teams/${code}`).set({
+        const teamObj = {
             name,
-            seed,
             tasks,
             order,
             chain: { revealed: 2, completed: 0 },
@@ -477,13 +548,18 @@
             log,
             createdAt: firebase.database.ServerValue.TIMESTAMP,
             lastAutoReveal: firebase.database.ServerValue.TIMESTAMP
-        });
+        };
+        if (seed != null) teamObj.seed = seed;
+
+        await db.ref(`teams/${code}`).set(teamObj);
 
         // Clear form
         document.getElementById('addTeamName').value = '';
         document.getElementById('addTeamCode').value = '';
         document.getElementById('addTeamSeed').value = '';
-        showToast(`Team "${name}" created with seed ${seed}`);
+        document.getElementById('addTeamBoardData').value = '';
+        const label = seed != null ? `seed ${seed}` : 'pasted board data';
+        showToast(`Team "${name}" created (${label})`);
     }
 
     // ═══════════════════════════════════════════
@@ -576,6 +652,9 @@
                         <span style="margin-left: auto; font-style: italic;">Click tile to cycle state</span>
                     </div>
                     <div class="admin-board">${boardTiles}</div>
+                    <div class="board-data-row">
+                        <button class="btn btn-copy-data" onclick="copyBoardData('${code}')">📋 Copy board data</button>
+                    </div>
                 </div>
             </div>`;
         }).join('');
@@ -585,6 +664,20 @@
         const card = headerEl.closest('.team-card');
         card.classList.toggle('expanded');
         card.querySelector('.expand-hint').textContent = card.classList.contains('expanded') ? '▲ Collapse' : '▼ Expand board';
+    }
+
+    function copyBoardData(code) {
+        const data = teamsCache[code];
+        if (!data) return;
+        const payload = {
+            name: data.name,
+            seed: data.seed ?? null,
+            tasks: data.tasks || DEFAULT_TASKS,
+            order: data.order || [...Array(TOTAL).keys()]
+        };
+        navigator.clipboard.writeText(JSON.stringify(payload, null, 2))
+            .then(() => showToast('Board data copied to clipboard!'))
+            .catch(() => showToast('Copy failed — check clipboard permissions.'));
     }
 
     async function cycleTileState(code, chainIdx) {
