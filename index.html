@@ -227,23 +227,23 @@
 
     <div id="leaderboard-section" class="leaderboard">
         <h2>⚔ Leaderboard</h2>
-        <div id="leaderboardContent"><div class="leaderboard-empty">No teams yet — create one to get started!</div></div>
+        <div id="leaderboardContent"><div class="leaderboard-empty">No teams yet.</div></div>
+    </div>
+
+    <!-- SECRET WORD (lobby) -->
+    <div id="secretWordBannerLobby" class="secret-word-banner hidden" style="margin-bottom:24px;">
+        <div class="sw-label">🔮 Secret Word</div>
+        <div class="sw-word" id="secretWordDisplayLobby"></div>
     </div>
 
     <div id="screen-lobby">
         <div class="lobby">
-            <h2>Join or Create a Team</h2>
+            <h2>Enter Your Team Code</h2>
             <div class="lobby-actions">
                 <div class="field-stack">
-                    <input type="text" id="teamNameInput" placeholder="Team name..." maxlength="30">
-                    <input type="text" id="teamCodeInput" placeholder="Choose a join code (e.g. skybreak24)..." maxlength="30">
-                    <button class="btn btn-primary" onclick="createTeam()">Create Team</button>
-                    <p class="hint">Share this join code with your teammates — it's the only way to access your board.</p>
-                </div>
-                <div class="divider"><span>or join existing</span></div>
-                <div class="field-stack">
-                    <input type="text" id="joinCodeInput" placeholder="Enter join code...">
-                    <button class="btn btn-secondary" onclick="joinTeam()">Join Team</button>
+                    <input type="text" id="joinCodeInput" placeholder="Enter join code..." onkeydown="if(event.key==='Enter')joinTeam()">
+                    <button class="btn btn-primary" onclick="joinTeam()">Open Board</button>
+                    <p class="hint">Enter the join code your team leader shared with you.</p>
                 </div>
             </div>
         </div>
@@ -329,37 +329,6 @@
     ];
 
     // ═══════════════════════════════════════════
-    //  SEEDED PRNG (Mulberry32)
-    // ═══════════════════════════════════════════
-    function mulberry32(seed) {
-        return function() {
-            seed |= 0; seed = seed + 0x6D2B79F5 | 0;
-            let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
-            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-            return ((t ^ t >>> 14) >>> 0) / 4294967296;
-        };
-    }
-
-    function seededShuffle(arr, seed) {
-        const a = [...arr];
-        const rng = mulberry32(seed);
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(rng() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
-        }
-        return a;
-    }
-
-    function shuffleArray(arr) {
-        const a = [...arr];
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
-        }
-        return a;
-    }
-
-    // ═══════════════════════════════════════════
     //  DATA MODEL
     // ═══════════════════════════════════════════
     let currentCode = null;
@@ -373,6 +342,7 @@
         document.getElementById('screen-lobby').classList.toggle('hidden', name !== 'lobby');
         document.getElementById('screen-game').classList.toggle('hidden', name !== 'game');
         document.getElementById('leaderboard-section').classList.toggle('hidden', name !== 'lobby');
+        document.getElementById('secretWordBannerLobby').classList.toggle('hidden', name !== 'lobby' || !document.getElementById('secretWordDisplayLobby').textContent);
     }
 
     // ═══════════════════════════════════════════
@@ -381,13 +351,25 @@
     function initSecretWord() {
         db.ref('config/secretWord').on('value', snap => {
             const word = snap.val();
+            // Game screen banner
             const banner = document.getElementById('secretWordBanner');
             const display = document.getElementById('secretWordDisplay');
+            // Lobby banner
+            const lobbyBanner = document.getElementById('secretWordBannerLobby');
+            const lobbyDisplay = document.getElementById('secretWordDisplayLobby');
+
             if (word) {
                 display.textContent = word;
                 banner.classList.remove('hidden');
+                lobbyDisplay.textContent = word;
+                // Only show lobby banner if we're on the lobby screen
+                if (!document.getElementById('screen-lobby').classList.contains('hidden')) {
+                    lobbyBanner.classList.remove('hidden');
+                }
             } else {
                 banner.classList.add('hidden');
+                lobbyBanner.classList.add('hidden');
+                lobbyDisplay.textContent = '';
             }
         });
     }
@@ -418,48 +400,6 @@
                 <div class="lb-score">${t.completed}/${t.total}</div>
             </div>`;
         }).join('');
-    }
-
-    // ═══════════════════════════════════════════
-    //  CREATE TEAM
-    // ═══════════════════════════════════════════
-    async function createTeam() {
-        const name = document.getElementById('teamNameInput').value.trim();
-        const code = document.getElementById('teamCodeInput').value.trim();
-        if (!name) { showToast('Enter a team name.'); return; }
-        if (!code) { showToast('Choose a join code.'); return; }
-        if (code.length < 3) { showToast('Join code must be at least 3 characters.'); return; }
-
-        const existing = await db.ref(`teams/${code}`).once('value');
-        if (existing.exists()) { showToast('That code is already taken — pick another.'); return; }
-
-        const seed = Math.floor(Math.random() * 2147483647);
-        const tasks = seededShuffle(DEFAULT_TASKS, seed);
-        const order = seededShuffle([...Array(TOTAL_TASKS).keys()], seed + 1);
-        const now = Date.now();
-
-        const initialLog = {};
-        for (let i = 0; i < INITIAL_REVEALS; i++) {
-            initialLog[now + i] = {
-                action: 'reveal', task: tasks[i], chainIndex: i,
-                time: new Date(now + i).toISOString(), source: 'initial'
-            };
-        }
-
-        await db.ref(`teams/${code}`).set({
-            name,
-            seed,
-            tasks,
-            order,
-            chain: { revealed: INITIAL_REVEALS, completed: 0 },
-            completedIndices: [],
-            log: initialLog,
-            createdAt: firebase.database.ServerValue.TIMESTAMP,
-            lastAutoReveal: firebase.database.ServerValue.TIMESTAMP
-        });
-
-        showToast(`Team "${name}" created!`);
-        enterBoard(code);
     }
 
     // ═══════════════════════════════════════════
