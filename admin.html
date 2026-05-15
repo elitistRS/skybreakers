@@ -15,6 +15,7 @@
             --accent-glow: rgba(240,192,64,0.3); --accent-dim: #b8912e;
             --text: #d4d4dc; --text-muted: #6a6a7a;
             --danger: #c0392b; --success: #27ae60;
+            --purple: #b8a0e8; --purple-dim: rgba(140,120,220,0.35);
             --font-display: 'Cinzel', serif; --font-body: 'Fira Sans', sans-serif;
         }
         body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -34,6 +35,7 @@
         .team-meta { font-size: 0.78rem; color: var(--text-muted); }
         .team-meta span { margin-right: 12px; }
         .team-meta .code { font-family: monospace; letter-spacing: 0.1em; color: var(--text); background: var(--tile-bg); padding: 1px 6px; border-radius: 3px; }
+        .team-meta .seed-tag { font-family: monospace; letter-spacing: 0.05em; color: var(--purple); background: rgba(140,120,220,0.1); padding: 1px 6px; border-radius: 3px; border: 1px solid rgba(140,120,220,0.2); }
         .team-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .expand-hint { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
 
@@ -96,10 +98,12 @@
         .logout-btn { position:fixed; top:14px; right:16px; z-index:50; background:transparent; border:1px solid var(--tile-border); color:var(--text-muted); font-family:var(--font-body); font-size:0.75rem; padding:5px 12px; border-radius:5px; cursor:pointer; transition:all .2s; }
         .logout-btn:hover { border-color:var(--danger); color:var(--danger); }
 
-        /* ── FREE TASKS ── */
+        /* ── SECTIONS ── */
         .section { background:var(--surface); border:1px solid var(--tile-border); border-radius:10px; padding:20px; margin-bottom:28px; }
         .section h2 { font-family:var(--font-display); font-size:1rem; color:var(--accent); margin-bottom:4px; letter-spacing:0.06em; }
         .section-sub { font-size:0.78rem; color:var(--text-muted); margin-bottom:16px; }
+
+        /* ── FREE TASKS ── */
         .free-task-list { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
         .free-task-row { display:flex; align-items:center; gap:8px; }
         .free-task-row input { flex:1; padding:9px 12px; background:var(--tile-bg); border:1px solid var(--tile-border); border-radius:5px; color:var(--text); font-family:var(--font-body); font-size:0.88rem; outline:none; transition:border-color .2s; }
@@ -113,6 +117,32 @@
         .free-add-row .btn-add:hover { background:var(--accent); color:var(--bg); }
         .btn-save-free { width:100%; padding:10px; font-size:0.9rem; font-weight:700; background:linear-gradient(135deg,var(--accent),var(--accent-dim)); color:#0a0a0f; border:none; border-radius:6px; cursor:pointer; font-family:var(--font-body); transition:opacity .2s; }
         .btn-save-free:hover { opacity:.88; }
+
+        /* ── SECRET WORD ── */
+        .sw-current { display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:12px 14px; background:rgba(140,120,220,0.08); border:1px solid var(--purple-dim); border-radius:8px; }
+        .sw-current-label { font-size:0.78rem; color:var(--text-muted); }
+        .sw-current-word { font-family:var(--font-display); font-size:1.15rem; font-weight:900; color:var(--purple); letter-spacing:0.08em; flex:1; }
+        .sw-current-none { font-style:italic; color:var(--text-muted); font-size:0.85rem; flex:1; }
+        .sw-word-list { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+        .sw-word-row { display:flex; align-items:center; gap:8px; }
+        .sw-word-row input { flex:1; padding:9px 12px; background:var(--tile-bg); border:1px solid var(--tile-border); border-radius:5px; color:var(--text); font-family:var(--font-body); font-size:0.88rem; outline:none; transition:border-color .2s; }
+        .sw-word-row input:focus { border-color:var(--accent-dim); }
+        .sw-word-row .btn-del { background:transparent; color:var(--danger); border:1px solid rgba(192,57,43,.35); border-radius:5px; padding:7px 11px; font-size:0.8rem; cursor:pointer; transition:all .2s; flex-shrink:0; }
+        .sw-word-row .btn-del:hover { background:var(--danger); color:white; border-color:var(--danger); }
+        .sw-btn-row { display:flex; gap:10px; }
+        .sw-btn-row .btn-save-free { flex:1; }
+        .btn-cycle { flex:1; padding:10px; font-size:0.9rem; font-weight:700; background:linear-gradient(135deg, #9b7fe8, #7a5fd6); color:white; border:none; border-radius:6px; cursor:pointer; font-family:var(--font-body); transition:opacity .2s; }
+        .btn-cycle:hover { opacity:.88; }
+        .btn-clear-word { padding:10px 16px; font-size:0.9rem; font-weight:600; background:transparent; color:var(--text-muted); border:1px solid var(--tile-border); border-radius:6px; cursor:pointer; font-family:var(--font-body); transition:all .2s; }
+        .btn-clear-word:hover { border-color:var(--danger); color:var(--danger); }
+
+        /* ── ADD TEAM ── */
+        .add-team-form { display:flex; flex-direction:column; gap:10px; }
+        .add-team-form input { padding:10px 14px; background:var(--tile-bg); border:1px solid var(--tile-border); border-radius:6px; color:var(--text); font-family:var(--font-body); font-size:0.9rem; outline:none; transition:border-color .2s; }
+        .add-team-form input:focus { border-color:var(--accent-dim); }
+        .add-team-form .hint { font-size:0.72rem; color:var(--text-muted); line-height:1.4; margin-top:-4px; }
+        .btn-add-team { width:100%; padding:10px; font-size:0.9rem; font-weight:700; background:linear-gradient(135deg,var(--accent),var(--accent-dim)); color:#0a0a0f; border:none; border-radius:6px; cursor:pointer; font-family:var(--font-body); transition:opacity .2s; }
+        .btn-add-team:hover { opacity:.88; }
     </style>
 </head>
 <body>
@@ -135,6 +165,28 @@
         <h1>Skybreakers Admin</h1>
         <div class="subtitle">⚠ Full board control — handle with care</div>
     </header>
+
+    <!-- Secret Word -->
+    <div class="section">
+        <h2>🔮 Secret Word</h2>
+        <p class="section-sub">Displayed on every team's page. Cycle picks a random word from the list below.</p>
+        <div class="sw-current">
+            <span class="sw-current-label">Current:</span>
+            <span class="sw-current-word" id="swCurrentWord"></span>
+        </div>
+        <div class="sw-word-list" id="swWordList"></div>
+        <div class="free-add-row">
+            <input type="text" id="swNewInput" placeholder="Add a word to the pool..." maxlength="60"
+                   onkeydown="if(event.key==='Enter')swAddWord()">
+            <button class="btn-add" onclick="swAddWord()">+ Add</button>
+        </div>
+        <div class="sw-btn-row">
+            <button class="btn-save-free" onclick="swSaveList()">💾 Save Word List</button>
+            <button class="btn-cycle" onclick="swCycle()">🔮 Cycle Word</button>
+            <button class="btn-clear-word" onclick="swClear()" title="Remove the displayed word">✕</button>
+        </div>
+    </div>
+
     <!-- Free Tasks -->
     <div class="section">
         <h2>⭐ Free Tasks</h2>
@@ -146,6 +198,19 @@
             <button class="btn-add" onclick="freeAdd()">+ Add</button>
         </div>
         <button class="btn-save-free" onclick="freeSave()">💾 Save Free Tasks</button>
+    </div>
+
+    <!-- Add Team -->
+    <div class="section">
+        <h2>➕ Add Team</h2>
+        <p class="section-sub">Create a new team from the admin panel with an optional fixed seed.</p>
+        <div class="add-team-form">
+            <input type="text" id="addTeamName" placeholder="Team name..." maxlength="30">
+            <input type="text" id="addTeamCode" placeholder="Join code (e.g. skybreak24)..." maxlength="30">
+            <input type="number" id="addTeamSeed" placeholder="Seed (optional — leave blank for random)">
+            <p class="hint">The seed controls the task shuffle and board layout. Same seed = same board. Leave blank for a random seed.</p>
+            <button class="btn-add-team" onclick="adminAddTeam()">Create Team</button>
+        </div>
     </div>
 
     <div id="teamList" class="team-list"><div class="empty-state">Loading teams...</div></div>
@@ -167,7 +232,6 @@
         appId: "1:198647199029:web:af0be2b9884b748fe1087c"
     });
     const db = firebase.database();
-
     const auth = firebase.auth();
 
     // Hide main content until auth resolves
@@ -195,7 +259,134 @@
 
     function doLogout() { auth.signOut(); }
 
-    // ── FREE TASKS ────────────────────────────────────
+    // ═══════════════════════════════════════════
+    //  SEEDED PRNG (Mulberry32)
+    // ═══════════════════════════════════════════
+    function mulberry32(seed) {
+        return function() {
+            seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+            let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+
+    function seededShuffle(arr, seed) {
+        const a = [...arr];
+        const rng = mulberry32(seed);
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(rng() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function shuffleArray(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    // ═══════════════════════════════════════════
+    //  SECRET WORD
+    // ═══════════════════════════════════════════
+    let swDraft = [];
+    let swCurrent = null;
+
+    // Load current word (live listener)
+    db.ref('config/secretWord').on('value', snap => {
+        swCurrent = snap.val() || null;
+        renderSwCurrent();
+    });
+
+    // Load word list
+    db.ref('config/secretWordList').once('value').then(snap => {
+        swDraft = snap.val() || [];
+        renderSwList();
+    });
+
+    function renderSwCurrent() {
+        const el = document.getElementById('swCurrentWord');
+        if (swCurrent) {
+            el.textContent = swCurrent;
+            el.className = 'sw-current-word';
+        } else {
+            el.textContent = 'No word set';
+            el.className = 'sw-current-none';
+        }
+    }
+
+    function renderSwList() {
+        const list = document.getElementById('swWordList');
+        if (!swDraft.length) {
+            list.innerHTML = '<div style="color:var(--text-muted);font-size:0.82rem;font-style:italic;padding:4px 0">No words in the pool yet.</div>';
+            return;
+        }
+        list.innerHTML = swDraft.map((word, i) =>
+            `<div class="sw-word-row">
+                <input type="text" value="${escapeHtml(word)}" oninput="swDraft[${i}]=this.value" placeholder="Word...">
+                <button class="btn-del" onclick="swRemoveWord(${i})" title="Remove">✕</button>
+            </div>`
+        ).join('');
+    }
+
+    function swAddWord() {
+        const inp = document.getElementById('swNewInput');
+        const val = inp.value.trim();
+        if (!val) return;
+        swDraft.push(val);
+        inp.value = '';
+        renderSwList();
+        const rows = document.querySelectorAll('#swWordList .sw-word-row input');
+        if (rows.length) rows[rows.length - 1].focus();
+    }
+
+    function swRemoveWord(i) { swDraft.splice(i, 1); renderSwList(); }
+
+    async function swSaveList() {
+        // Sync inputs back to draft
+        document.querySelectorAll('#swWordList .sw-word-row input').forEach((inp, i) => {
+            if (i < swDraft.length) swDraft[i] = inp.value.trim();
+        });
+        const cleaned = swDraft.filter(w => w.length > 0);
+        await db.ref('config/secretWordList').set(cleaned);
+        swDraft = cleaned;
+        renderSwList();
+        showToast('✅ Word list saved!');
+    }
+
+    async function swCycle() {
+        // Read latest list from draft (sync inputs first)
+        document.querySelectorAll('#swWordList .sw-word-row input').forEach((inp, i) => {
+            if (i < swDraft.length) swDraft[i] = inp.value.trim();
+        });
+        const pool = swDraft.filter(w => w.length > 0);
+        if (!pool.length) { showToast('Add some words to the pool first.'); return; }
+
+        // Pick a random word, preferring one different from the current
+        let pick;
+        if (pool.length === 1) {
+            pick = pool[0];
+        } else {
+            const filtered = pool.filter(w => w !== swCurrent);
+            pick = filtered[Math.floor(Math.random() * filtered.length)];
+        }
+
+        await db.ref('config/secretWord').set(pick);
+        showToast(`🔮 Secret word changed to "${pick}"`);
+    }
+
+    async function swClear() {
+        await db.ref('config/secretWord').remove();
+        showToast('Secret word cleared.');
+    }
+
+    // ═══════════════════════════════════════════
+    //  FREE TASKS
+    // ═══════════════════════════════════════════
     const DEFAULT_FREE_TASKS = [
         "Claim a quest cape",
         "Reach max total level",
@@ -248,6 +439,56 @@
         showToast('✅ Free tasks saved!');
     }
 
+    // ═══════════════════════════════════════════
+    //  ADD TEAM (ADMIN)
+    // ═══════════════════════════════════════════
+    async function adminAddTeam() {
+        const name = document.getElementById('addTeamName').value.trim();
+        const code = document.getElementById('addTeamCode').value.trim();
+        const seedInput = document.getElementById('addTeamSeed').value.trim();
+
+        if (!name) { showToast('Enter a team name.'); return; }
+        if (!code) { showToast('Enter a join code.'); return; }
+        if (code.length < 3) { showToast('Join code must be at least 3 characters.'); return; }
+
+        const existing = await db.ref(`teams/${code}`).once('value');
+        if (existing.exists()) { showToast('That code is already taken.'); return; }
+
+        const seed = seedInput ? parseInt(seedInput) : Math.floor(Math.random() * 2147483647);
+        if (isNaN(seed)) { showToast('Seed must be a number.'); return; }
+
+        const tasks = seededShuffle(DEFAULT_TASKS, seed);
+        const order = seededShuffle([...Array(TOTAL).keys()], seed + 1);
+        const now = Date.now();
+
+        const log = {};
+        for (let i = 0; i < 2; i++) {
+            log[now + i] = { action: 'reveal', task: tasks[i], chainIndex: i, time: new Date(now + i).toISOString(), source: 'initial' };
+        }
+
+        await db.ref(`teams/${code}`).set({
+            name,
+            seed,
+            tasks,
+            order,
+            chain: { revealed: 2, completed: 0 },
+            completedIndices: [],
+            freeCompleted: {},
+            log,
+            createdAt: firebase.database.ServerValue.TIMESTAMP,
+            lastAutoReveal: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        // Clear form
+        document.getElementById('addTeamName').value = '';
+        document.getElementById('addTeamCode').value = '';
+        document.getElementById('addTeamSeed').value = '';
+        showToast(`Team "${name}" created with seed ${seed}`);
+    }
+
+    // ═══════════════════════════════════════════
+    //  TEAMS
+    // ═══════════════════════════════════════════
     const TOTAL = 25;
     const DEFAULT_TASKS = [
         "Full Godsword (GWD1)", "Dragon Mattock/Heist/Warped Stone", "Raksha Unique", "5 Nex Uniques", "Arch-Glacor Broadcast",
@@ -259,7 +500,6 @@
 
     let teamsCache = {};
 
-    function shuffleArray(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
     function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
     function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
 
@@ -285,6 +525,7 @@
             const chain = data.chain || { revealed: 2, completed: 0 };
             const isExp = expanded.has(code);
             const created = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '—';
+            const seedDisplay = data.seed != null ? data.seed : '—';
 
             const completedIndices = data.completedIndices || [];
             const completedSet = new Set(completedIndices);
@@ -309,6 +550,7 @@
                         <h3>${escapeHtml(data.name)}</h3>
                         <div class="team-meta">
                             <span class="code">${code}</span>
+                            <span class="seed-tag">seed: ${seedDisplay}</span>
                             <span>${completedSet.size} done</span>
                             <span>${chain.revealed - completedSet.size} open</span>
                             <span>${TOTAL - chain.revealed} hidden</span>
@@ -371,7 +613,6 @@
             // HIDDEN → REVEALED (bump revealed to include this tile)
             const newRevealed = chainIdx + 1;
             updates['chain/revealed'] = newRevealed;
-            // Log reveals for all newly revealed tiles
             for (let i = chain.revealed; i <= chainIdx; i++) {
                 updates[`log/${now + i}`] = { action: 'reveal', task: tasks[i], chainIndex: i, time: new Date(now + i).toISOString(), source: 'admin' };
             }
@@ -388,16 +629,13 @@
         const chain = data.chain || { revealed: 2, completed: 0 };
 
         if (field === 'completed') {
-            // completed can't exceed revealed
             if (v > chain.revealed) v = chain.revealed;
-            // Rebuild completedIndices to match: mark chain indices 0..v-1 as completed
             const newCompleted = Array.from({ length: v }, (_, i) => i);
             await db.ref(`teams/${code}`).update({
                 'chain/completed': v,
                 'completedIndices': newCompleted
             });
         } else {
-            // revealed can't be less than completed
             const currentCompleted = (data.completedIndices || []).length;
             if (v < currentCompleted) v = currentCompleted;
             await db.ref(`teams/${code}/chain/revealed`).set(v);
@@ -435,17 +673,18 @@
         const createdAt = data ? data.createdAt : Date.now();
 
         const now = Date.now();
-        const tasks = shuffleArray(DEFAULT_TASKS);
-        const order = shuffleArray([...Array(TOTAL).keys()]);
+        const seed = Math.floor(Math.random() * 2147483647);
+        const tasks = seededShuffle(DEFAULT_TASKS, seed);
+        const order = seededShuffle([...Array(TOTAL).keys()], seed + 1);
         const log = {};
         for (let i = 0; i < 2; i++) {
             log[now + i] = { action: 'reveal', task: tasks[i], chainIndex: i, time: new Date(now + i).toISOString(), source: 'initial' };
         }
 
-        // Overwrite the entire team node to wipe all stale fields
         await db.ref(`teams/${code}`).set({
             name: teamName,
             createdAt: createdAt,
+            seed: seed,
             tasks: tasks,
             order: order,
             chain: { revealed: 2, completed: 0 },
@@ -454,7 +693,7 @@
             log: log,
             lastAutoReveal: now
         });
-        showToast(`"${name}" has been fully reset.`);
+        showToast(`"${name}" has been fully reset (new seed: ${seed}).`);
     }
 
     async function deleteTeam(code, name) {
