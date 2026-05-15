@@ -140,6 +140,27 @@
         .bingo-alert h3 { font-family: var(--font-display); color: var(--accent); font-size: 1.2rem; margin-bottom: 4px; }
         .bingo-alert p { font-size: 0.82rem; color: var(--text-muted); }
 
+        /* SECRET WORD BANNER */
+        .secret-word-banner {
+            text-align: center; padding: 14px 16px; margin-bottom: 16px;
+            background: linear-gradient(135deg, rgba(100,80,200,0.12), rgba(100,80,200,0.04));
+            border: 1px solid rgba(140,120,220,0.35); border-radius: 8px;
+            position: relative; overflow: hidden;
+        }
+        .secret-word-banner::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background: radial-gradient(ellipse at 50% 0%, rgba(140,120,220,0.1), transparent 70%);
+        }
+        .secret-word-banner .sw-label {
+            font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;
+            letter-spacing: 0.18em; margin-bottom: 4px; position: relative;
+        }
+        .secret-word-banner .sw-word {
+            font-family: var(--font-display); font-size: 1.3rem; font-weight: 900;
+            color: #b8a0e8; letter-spacing: 0.1em; position: relative;
+            text-shadow: 0 0 18px rgba(140,120,220,0.4);
+        }
+
         /* TOAST */
         .toast {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
@@ -240,6 +261,12 @@
             <p>All tasks completed — incredible work!</p>
         </div>
 
+        <!-- SECRET WORD -->
+        <div id="secretWordBanner" class="secret-word-banner hidden">
+            <div class="sw-label">🔮 Secret Word</div>
+            <div class="sw-word" id="secretWordDisplay"></div>
+        </div>
+
         <div class="stats" id="statsDisplay">0 / 25 completed</div>
         <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
 
@@ -294,44 +321,47 @@
         "2 ED2/ED3 Uniques (2)", "2 Rex Matriarch Uniques", "2 GWD2 Uniques", "KBD + KQ Head", "D Kite OR Royal Crossbow"
     ];
 
-
-// Free tasks: always visible for all teams, stored globally in Firebase
-    // Admins can add/remove these via the UI
+    // Free tasks: always visible for all teams, stored globally in Firebase
     const DEFAULT_FREE_TASKS = [
         "Claim a quest cape",
         "Reach max total level",
         "Complete a 5-star Elite Dungeon"
     ];
+
+    // ═══════════════════════════════════════════
+    //  SEEDED PRNG (Mulberry32)
+    // ═══════════════════════════════════════════
+    function mulberry32(seed) {
+        return function() {
+            seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+            let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+
+    function seededShuffle(arr, seed) {
+        const a = [...arr];
+        const rng = mulberry32(seed);
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(rng() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function shuffleArray(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
     // ═══════════════════════════════════════════
     //  DATA MODEL
-    //
-    //  team = {
-    //    name: "Team Name",
-    //    tasks: [...25 shuffled tasks...],   // tasks[0] = first in chain, tasks[24] = last
-    //    chain: {
-    //      revealed: 2,    // how many tiles are visible (index 0..revealed-1 on the chain)
-    //      completed: 0    // how many tiles are completed (index 0..completed-1 on the chain)
-    //    },
-    //    order: [14, 3, 22, ...],   // board position → chain position mapping
-    //                                // order[boardIndex] = chainIndex
-    //    log: { ... }
-    //  }
-    //
-    //  The chain is linear: tasks[0], tasks[1], ..., tasks[24]
-    //  "order" maps each board square (0-24) to a chain position,
-    //  so the board layout looks random but the reveal order is fixed.
-    //
-    //  Tile state:
-    //    chainIndex < completed        → completed (green)
-    //    chainIndex < revealed         → revealed (gold, clickable)
-    //    chainIndex >= revealed         → hidden
-    //
-    //  Complete: only the lowest non-completed revealed tile can be completed.
-    //            completing it: completed++, and if completed == revealed, revealed++
-    //  Uncomplete: only the last completed tile. completed--, revealed stays.
-    //              BUT if revealed was bumped by that completion, revealed-- too.
     // ═══════════════════════════════════════════
-
     let currentCode = null;
     let currentRef  = null;
     let teamData    = null;
@@ -343,6 +373,23 @@
         document.getElementById('screen-lobby').classList.toggle('hidden', name !== 'lobby');
         document.getElementById('screen-game').classList.toggle('hidden', name !== 'game');
         document.getElementById('leaderboard-section').classList.toggle('hidden', name !== 'lobby');
+    }
+
+    // ═══════════════════════════════════════════
+    //  SECRET WORD
+    // ═══════════════════════════════════════════
+    function initSecretWord() {
+        db.ref('config/secretWord').on('value', snap => {
+            const word = snap.val();
+            const banner = document.getElementById('secretWordBanner');
+            const display = document.getElementById('secretWordDisplay');
+            if (word) {
+                display.textContent = word;
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        });
     }
 
     // ═══════════════════════════════════════════
@@ -376,15 +423,6 @@
     // ═══════════════════════════════════════════
     //  CREATE TEAM
     // ═══════════════════════════════════════════
-    function shuffleArray(arr) {
-        const a = [...arr];
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
-        }
-        return a;
-    }
-
     async function createTeam() {
         const name = document.getElementById('teamNameInput').value.trim();
         const code = document.getElementById('teamCodeInput').value.trim();
@@ -395,9 +433,9 @@
         const existing = await db.ref(`teams/${code}`).once('value');
         if (existing.exists()) { showToast('That code is already taken — pick another.'); return; }
 
-        const tasks = shuffleArray(DEFAULT_TASKS);
-        // order maps board positions to chain positions (random layout)
-        const order = shuffleArray([...Array(TOTAL_TASKS).keys()]);
+        const seed = Math.floor(Math.random() * 2147483647);
+        const tasks = seededShuffle(DEFAULT_TASKS, seed);
+        const order = seededShuffle([...Array(TOTAL_TASKS).keys()], seed + 1);
         const now = Date.now();
 
         const initialLog = {};
@@ -410,6 +448,7 @@
 
         await db.ref(`teams/${code}`).set({
             name,
+            seed,
             tasks,
             order,
             chain: { revealed: INITIAL_REVEALS, completed: 0 },
@@ -597,8 +636,8 @@
 
         // Must be revealed but not yet completed
         const completedSet = new Set(teamData.completedIndices || []);
-        if (chainIdx >= chain.revealed) return;       // not revealed yet
-        if (completedSet.has(chainIdx)) return;        // already completed
+        if (chainIdx >= chain.revealed) return;
+        if (completedSet.has(chainIdx)) return;
 
         const updates = {};
         const now = Date.now();
@@ -632,9 +671,6 @@
 
         if (completedIndices.length === 0) return;
 
-        // The last completed tile in sequence order is the one with the highest chainIdx
-        // (i.e. the one that was most recently revealed before being completed)
-        // We find the completed tile that was revealed last = highest chainIndex in completedIndices
         const lastChainIdx = Math.max(...completedIndices);
         const lastTask = tasks[lastChainIdx];
 
@@ -681,19 +717,14 @@
     }
 
     // ═══════════════════════════════════════════
-    //  UTILITIES
-    // ═══════════════════════════════════════════
-    // ═══════════════════════════════════════════
     //  FREE ROW
     // ═══════════════════════════════════════════
     let freeTasks = [];
-    let freeCompleted = {};   // { taskName: true } per team, stored in teamData.freeCompleted
+    let freeCompleted = {};
     function initFreeTasks() {
-        // Seed defaults if not yet set
         db.ref('config/freeTasks').once('value').then(snap => {
             if (!snap.exists()) db.ref('config/freeTasks').set(DEFAULT_FREE_TASKS);
         });
-        // Listen to global free tasks in Firebase
         db.ref('config/freeTasks').on('value', snap => {
             freeTasks = snap.val() || DEFAULT_FREE_TASKS;
             renderFreeRow();
@@ -705,7 +736,6 @@
         if (!body) return;
         const completedMap = teamData?.freeCompleted || {};
 
-        // Smart column count: max 5 per row, distribute evenly
         const n = freeTasks.length;
         const MAX_COLS = 5;
         if (n > 0) {
@@ -734,7 +764,7 @@
 
         const updates = {};
         if (isDone) {
-            updates[`freeCompleted/${key}`] = null; // delete
+            updates[`freeCompleted/${key}`] = null;
             updates[`log/${now}`] = { action: 'uncomplete', task: `[FREE] ${task}`, chainIndex: -1, time: new Date(now).toISOString() };
         } else {
             updates[`freeCompleted/${key}`] = true;
@@ -751,6 +781,9 @@
         toggle.classList.toggle('open', !isOpen);
     }
 
+    // ═══════════════════════════════════════════
+    //  UTILITIES
+    // ═══════════════════════════════════════════
     function copyJoinCode() { navigator.clipboard.writeText(currentCode).then(() => showToast('Join code copied!')); }
     function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
     function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
@@ -760,6 +793,7 @@
     // ═══════════════════════════════════════════
     initLeaderboard();
     initFreeTasks();
+    initSecretWord();
     const saved = localStorage.getItem('rs3bingo_team');
     if (saved) {
         db.ref(`teams/${saved}`).once('value').then(snap => {
