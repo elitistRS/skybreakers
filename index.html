@@ -224,15 +224,16 @@
         <h1>Skybreakers Bingo</h1>
         <div class="subtitle">Clan PvM &amp; Skilling Challenge</div>
     </header>
+
+    <div id="leaderboard-section" class="leaderboard">
+        <h2>⚔ Leaderboard</h2>
+        <div id="leaderboardContent"><div class="leaderboard-empty">No teams yet.</div></div>
+    </div>
+
     <!-- SECRET WORD (lobby) -->
     <div id="secretWordBannerLobby" class="secret-word-banner hidden" style="margin-bottom:24px;">
         <div class="sw-label">🔮 Secret Word</div>
         <div class="sw-word" id="secretWordDisplayLobby"></div>
-    </div>
-    
-    <div id="leaderboard-section" class="leaderboard">
-        <h2>⚔ Leaderboard</h2>
-        <div id="leaderboardContent"><div class="leaderboard-empty">No teams yet.</div></div>
     </div>
 
     <div id="screen-lobby">
@@ -242,7 +243,7 @@
                 <div class="field-stack">
                     <input type="text" id="joinCodeInput" placeholder="Enter join code..." onkeydown="if(event.key==='Enter')joinTeam()">
                     <button class="btn btn-primary" onclick="joinTeam()">Open Board</button>
-                    <p class="hint">Enter the join code the admin team shared with you.</p>
+                    <p class="hint">Enter the join code your team leader shared with you.</p>
                 </div>
             </div>
         </div>
@@ -257,7 +258,7 @@
 
         <div id="bingoAlert" class="bingo-alert hidden">
             <h3>🎉 BOARD COMPLETE!</h3>
-            <p>All tasks completed. Incredible work!</p>
+            <p>All tasks completed — incredible work!</p>
         </div>
 
         <!-- SECRET WORD -->
@@ -272,7 +273,7 @@
         <!-- FREE ROW -->
         <div class="free-row-wrapper" id="freeRowWrapper">
             <div class="free-row-header" onclick="toggleFreeRow()">
-                <span class="free-row-title">⭐ FREE TASKS: Always Open</span>
+                <span class="free-row-title">⭐ FREE TASKS — Always Open</span>
                 <span class="free-row-toggle open" id="freeRowToggle">▼</span>
             </div>
             <div class="free-row-body" id="freeRowBody"></div>
@@ -309,7 +310,6 @@
     //  CONFIG
     // ═══════════════════════════════════════════
     const INITIAL_REVEALS = 2;
-    const AUTO_REVEAL_INTERVAL_MS = 2 * 24 * 60 * 60 * 1000;
     const TOTAL_TASKS = 25;
 
     const DEFAULT_TASKS = [
@@ -422,7 +422,6 @@
             if (!teamData) { showToast('Team was deleted.'); leaveTeam(); return; }
             renderBoard();
             renderLog();
-            checkAutoReveal();
         });
         showScreen('game');
     }
@@ -432,52 +431,6 @@
         currentRef = currentCode = teamData = null;
         localStorage.removeItem('rs3bingo_team');
         showScreen('lobby');
-    }
-
-    // ═══════════════════════════════════════════
-    //  AUTO-REVEAL
-    // ═══════════════════════════════════════════
-    let autoRevealRunning = false;
-
-    async function checkAutoReveal() {
-        if (!teamData || autoRevealRunning) return;
-        const lastAuto = teamData.lastAutoReveal || teamData.createdAt || 0;
-        const now = Date.now();
-        if (now - lastAuto < AUTO_REVEAL_INTERVAL_MS) return;
-
-        const periods = Math.floor((now - lastAuto) / AUTO_REVEAL_INTERVAL_MS);
-        if (periods <= 0) return;
-
-        autoRevealRunning = true;
-        try {
-            await db.ref(`teams/${currentCode}/lastAutoReveal`).transaction(current => {
-                if (current && (now - current) < AUTO_REVEAL_INTERVAL_MS) return;
-                return now;
-            }, async (error, committed) => {
-                if (error || !committed) { autoRevealRunning = false; return; }
-
-                const chain = teamData.chain || { revealed: INITIAL_REVEALS, completed: 0 };
-                const tasks = teamData.tasks || DEFAULT_TASKS;
-                const newRevealed = Math.min(chain.revealed + periods, tasks.length);
-                const added = newRevealed - chain.revealed;
-
-                if (added <= 0) { autoRevealRunning = false; return; }
-
-                const updates = { 'chain/revealed': newRevealed };
-                const logBase = Date.now();
-                for (let i = 0; i < added; i++) {
-                    const ci = chain.revealed + i;
-                    updates[`log/${logBase + i}`] = {
-                        action: 'reveal', task: tasks[ci], chainIndex: ci,
-                        time: new Date(logBase + i).toISOString(), source: 'auto'
-                    };
-                }
-
-                await db.ref(`teams/${currentCode}`).update(updates);
-                showToast(`⏰ ${added} bonus task${added > 1 ? 's' : ''} auto-revealed!`);
-                autoRevealRunning = false;
-            });
-        } catch { autoRevealRunning = false; }
     }
 
     // ═══════════════════════════════════════════
